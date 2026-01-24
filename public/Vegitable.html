@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Cart</title>
+    <link rel="stylesheet" href="vegitable.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+</head>
+<body style="font-family: Poppins;">
+    <header class="head">
+        <h1 style="text-align: center; color: black;">Daily <span style="color: rgb(255, 255, 255);">Cart</span></h1>
+        <ul>
+            <li><a href="DailyCart.html">Home</a></li>
+            <li><a href="#">Vegetables</a></li>
+            <li><a href="#">Cart</a></li>
+            <li><a href="login.html">Profile</a></li>
+            <div class="icon-container">
+                <button id="search-toggle" class="icon-button">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button id="cart-icon" class="icon-button cart">
+                    <i class="fa-solid fa-shopping-cart"></i>
+                    <span class="quantity">0</span>
+                </button>
+                <div class="nav-container">
+                    <div class="menu-icon" onclick="toggleMenu()">☰</div>
+                </div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <ul>
+                        <li><a href="#">Profile</a></li>
+                        <li><a href="About.html">About</a></li>
+                        <li><a href="#">Services</a></li>
+                        <li><a href="#">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </ul>
+    </header>
+    <br>
+    <div class="container"></div>
+    <main>
+        <div class="search-container">
+            <div id="search-box" class="search-box">
+                <div class="row">
+                    <input type="text" id="input-box" placeholder="Search...">
+                    <button>
+                        <i class="fa-solid fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <br>
+        <br>
+        <h2 class="heading">Vegetables</h2>
+        <div class="card-list">
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-02 143921.png" alt="Onion">
+                <h4 class="card-title">Onion</h4>
+                <div class="card-price">
+                    <span>$2.45</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-02 144855.png" alt="Tomato">
+                <h4 class="card-title">Tomato</h4>
+                <div class="card-price">
+                    <span>$4.35</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-02 175213.png" alt="Beetroot">
+                <h4 class="card-title">Beetroot</h4>
+                <div class="card-price">
+                    <span>$3.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-10 160255.png" alt="Sweet potato">
+                <br>
+                <h4 class="card-title">Sweet potato</h4>
+                <div class="card-price">
+                    <span>$8.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-10 155838.png" alt="Carrot">
+                <h4 class="card-title">Carrot</h4>
+                <div class="card-price">
+                    <span>$6.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-15 103625.png" alt="Broccoli">
+                <h4 class="card-title">Broccoli</h4>
+                <div class="card-price">
+                    <span>$9.45</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-15 103743.png" alt="Cauliflower">
+                <h4 class="card-title">Cauliflower</h4>
+                <div class="card-price">
+                    <span>$13.35</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-15 103913.png" alt="Lady’s finger">
+                <h4 class="card-title">Lady’s finger</h4>
+                <div class="card-price">
+                    <span>$8.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-15 104248.png" alt=" potato">
+                <br>
+                <h4 class="card-title">Potato</h4>
+                <div class="card-price">
+                    <span>$12.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-15 104210.png" alt="Radish">
+                <h4 class="card-title">Radish </h4>
+                <div class="card-price">
+                    <span>$11.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/Screenshot 2024-07-15 104823.png" alt="Bottle Gourd">
+                <h4 class="card-title">Bottle Gourd</h4>
+                <div class="card-price">
+                    <span>$12.45</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/cabbage.png" alt="Cabbage">
+                <h4 class="card-title">Cabbage</h4>
+                <div class="card-price">
+                    <span>$14.35</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/capsicum.png" alt="Capsicum">
+                <h4 class="card-title">Capsicum </h4>
+                <div class="card-price">
+                    <span>$10.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/cucumber.png" alt="Sweet potato">
+                <br>
+                <h4 class="card-title">Cucumber </h4>
+                <div class="card-price">
+                    <span>$8.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="assist/vegitable.assist/garlic.png" alt="Garlic">
+                <h4 class="card-title">Garlic </h4>
+                <div class="card-price">
+                    <span>$6.00</span>
+                    <div class="add">
+                        <div class="btn">
+                            <button><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </main>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sider-close">x</div>
+        <div class="cart-items"></div>
+        <div class="sidebar-footer">
+            <div class="total">Total: <span class="cart-total">$0.00</span></div>
+            <button class="checkout">Checkout</button>
+        </div>
+    </div>
+
+    <script src="./DailtyCart.js"></script>
+    <script>
+        // Toggle dropdown menu
+        function toggleMenu() {
+            const dropdown = document.getElementById("dropdownMenu");
+            dropdown.classList.toggle("show");
+        }
+    
+        // Toggle search box
+        document.getElementById("search-toggle").addEventListener("click", () => {
+            document.getElementById("search-box").classList.toggle("active");
+        });
+    
+        // Sidebar cart functionality
+        document.addEventListener("DOMContentLoaded", () => {
+            const cartIcon = document.getElementById("cart-icon");
+            const sidebar = document.getElementById("sidebar");
+            const sidebarClose = document.querySelector(".sider-close");
+            const cartItems = document.querySelector(".cart-items");
+            const cartTotal = document.querySelector(".cart-total");
+            const quantitySpan = document.querySelector(".quantity");
+    
+            let cart = [];
+    
+            function updateCartDisplay() {
+                cartItems.innerHTML = "";
+                let total = 0;
+    
+                cart.forEach(item => {
+                    const itemDiv = document.createElement("div");
+                    itemDiv.className = "cart-item";
+                    itemDiv.innerHTML = `
+                        <p>${item.name} x${item.qty}</p>
+                        <p>$${(item.price * item.qty).toFixed(2)}</p>
+                    `;
+                    cartItems.appendChild(itemDiv);
+                    total += item.price * item.qty;
+                });
+    
+                cartTotal.textContent = `$${total.toFixed(2)}`;
+                quantitySpan.textContent = cart.reduce((sum, item) => sum + item.qty, 0);
+            }
+    
+            // Add to cart button event
+            document.querySelectorAll(".card .btn button").forEach((btn, index) => {
+                btn.addEventListener("click", () => {
+                    const card = btn.closest(".card");
+                    const name = card.querySelector(".card-title").textContent;
+                    const price = parseFloat(card.querySelector(".card-price span").textContent.replace('$', ''));
+    
+                    const existingItem = cart.find(item => item.name === name);
+                    if (existingItem) {
+                        existingItem.qty++;
+                    } else {
+                        cart.push({ name, price, qty: 1 });
+                    }
+    
+                    updateCartDisplay();
+                });
+            });
+    
+            // Cart icon click
+            cartIcon.addEventListener("click", () => {
+                sidebar.classList.toggle("active");
+            });
+    
+            // Close cart
+            sidebarClose.addEventListener("click", () => {
+                sidebar.classList.remove("active");
+            });
+        });
+    </script>
+    
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Products Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        label {
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Seller Products Management</h1>
+
+    <!-- Form to Add/Update Products -->
+    <div class="form-container">
+        <h3>Add/Update Product</h3>
+        <form id="productForm">
+            <label for="sellerName">Seller Name:</label>
+            <input type="text" id="sellerName" name="sellerName" placeholder="Enter seller name" required>
+
+            <label for="productName">Product Name:</label>
+            <input type="text" id="productName" name="productName" placeholder="Enter product name" required>
+
+            <button type="submit">Add/Update Product</button>
+        </form>
+    </div>
+
+    <!-- Table to Display Products -->
+    <table id="productsTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Seller Name</th>
+                <th>Product Name</th>
+                <th>Added Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dynamic rows will be added here -->
+        </tbody>
+    </table>
+
+    <script>
+        const products = [];
+
+        const productForm = document.getElementById('productForm');
+        const productsTable = document.getElementById('productsTable').getElementsByTagName('tbody')[0];
+
+        // Function to render products table
+        function renderTable() {
+            productsTable.innerHTML = '';
+
+            products.forEach((product, index) => {
+                const row = productsTable.insertRow();
+
+                row.insertCell(0).textContent = index + 1; // ID
+                row.insertCell(1).textContent = product.sellerName; // Seller Name
+                row.insertCell(2).textContent = product.productName; // Product Name
+                row.insertCell(3).textContent = product.addedDate; // Added Date
+
+                // Actions
+                const actionsCell = row.insertCell(4);
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteProduct(index);
+                actionsCell.appendChild(deleteButton);
+            });
+        }
+
+        // Function to add/update a product
+        productForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const sellerName = document.getElementById('sellerName').value;
+            const productName = document.getElementById('productName').value;
+
+            // Check if product already exists
+            const existingProductIndex = products.findIndex(
+                (product) => product.sellerName === sellerName && product.productName === productName
+            );
+
+            if (existingProductIndex >= 0) {
+                alert('Product already exists. Updating the entry.');
+                products[existingProductIndex].addedDate = new Date().toLocaleString();
+            } else {
+                products.push({
+                    sellerName,
+                    productName,
+                    addedDate: new Date().toLocaleString()
+                });
+            }
+
+            renderTable();
+            productForm.reset();
+        });
+
+        // Function to delete a product
+        function deleteProduct(index) {
+            products.splice(index, 1);
+            renderTable();
+        }
+
+        // Initial rendering
+        renderTable();
+    </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up / Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+  <style>
+    body {
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+    }
+    .form-card {
+      border-radius: 50px;
+      width: 350px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      background: #f9f9f9;
+      text-align: center;
+      padding: 20px;
+    }
+    .btn-box {
+      width: 220px;
+      margin: 20px auto;
+      position: relative;
+      border-radius: 30px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .toggle-btn {
+      padding: 10px 30px;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+      position: relative;
+      z-index: 1;
+      font-weight: bold;
+      user-select: none;
+    }
+    .btn {
+      position: absolute;
+      top: 0;
+      left: 0; /* changed to 0 for login position */
+      width: 110px;
+      height: 100%;
+      background: linear-gradient(to right, #ff8c00, #e26b6b);
+      border-radius: 30px;
+      transition: 0.5s;
+      z-index: 0;
+    }
+    .input-container {
+      position: relative;
+      margin: 15px 0;
+    }
+    input {
+      padding: 10px 10px 10px 40px;
+      width: 90%;
+      border-radius: 50px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      outline: none;
+    }
+    .icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: #888;
+    }
+    .signin {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      background: #ff8c00;
+      color: #fff;
+      font-weight: bold;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+    .signin:hover {
+      background: #e67300;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 10px 0 5px;
+      text-align: left;
+      padding-left: 5%;
+      font-size: 14px;
+    }
+    #message {
+      color: #000000;
+      margin-top: 10px;
+    }
+    /* Custom Dialog Box */
+    .dialog-box {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      width: 300px;
+      text-align: center;
+      z-index: 1000;
+    }
+    .dialog-box button {
+      background-color: #ff8c00;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-card">
+    <div class="btn-box">
+      <div class="btn" id="btn"></div>
+      <button type="button" class="toggle-btn" onclick="showLogin()">Log In</button>
+      <button type="button" class="toggle-btn" onclick="showSignUp()">Sign Up</button>
+    </div>
+    <div id="form-container">
+      <!-- Sign-Up Form -->
+      <div id="signup" class="form-content signup" style="display:none;">
+        <label for="signupName">First Name</label>
+        <div class="input-container">
+          <i class="fa-solid fa-user icon"></i>
+          <input type="text" id="signupName" placeholder="Enter your First Name" required />
+        </div>
+        <label for="signupEmail">E-mail</label>
+        <div class="input-container">
+          <i class="fa-solid fa-envelope icon"></i>
+          <input type="email" id="signupEmail" placeholder="Enter your E-mail" required />
+        </div>
+        <label for="signupPassword">Password</label>
+        <div class="input-container">
+          <i class="fa-solid fa-lock icon"></i>
+          <input type="password" id="signupPassword" placeholder="Enter your password" required />
+        </div>
+        <button type="button" class="signin" onclick="signUp()">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login" class="form-content login" style="display:none;">
+        <label for="loginName">First Name</label>
+        <div class="input-container">
+          <i class="fa-solid fa-user icon"></i>
+          <input type="text" id="loginName" placeholder="Enter your First Name" required />
+        </div>
+        <label for="loginPassword">Password</label>
+        <div class="input-container">
+          <i class="fa-solid fa-lock icon"></i>
+          <input type="password" id="loginPassword" placeholder="Enter your password" required />
+        </div>
+        <button type="button" class="signin" onclick="logIn()">Log In</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Dialog Box -->
+  <div id="dialogBox" class="dialog-box" role="alertdialog" aria-modal="true" aria-labelledby="dialogMessage">
+    <p id="dialogMessage"></p>
+    <button onclick="handleDialogClick()">OK</button>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById("login");
+    const signupForm = document.getElementById("signup");
+    const btn = document.getElementById("btn");
+    const dialogBox = document.getElementById("dialogBox");
+    const dialogMessage = document.getElementById("dialogMessage");
+
+    function showSignUp() {
+      loginForm.style.display = "none";
+      signupForm.style.display = "block";
+      btn.style.left = "110px";
+    }
+
+    function showLogin() {
+      signupForm.style.display = "none";
+      loginForm.style.display = "block";
+      btn.style.left = "0px";
+    }
+
+    // Basic validation example
+    function validateEmail(email) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    function signUp() {
+      const name = document.getElementById("signupName").value.trim();
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value.trim();
+
+      if (!name || !email || !password) {
+        showDialog("Please fill in all fields.");
+        return;
+      }
+      if (!validateEmail(email)) {
+        showDialog("Please enter a valid email address.");
+        return;
+      }
+
+      fetch("http://localhost:5001/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          showDialog(data.message);
+        })
+        .catch((error) => {
+          console.error(error);
+          showDialog("An error occurred. Please try again.");
+        });
+    }
+
+    function logIn() {
+      const name = document.getElementById("loginName").value.trim();
+      const password = document.getElementById("loginPassword").value.trim();
+
+      if (!name || !password) {
+        showDialog("Please fill in all fields.");
+        return;
+      }
+
+      fetch("http://localhost:5001/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: name, password }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          showDialog(data.message);
+          if (data.message === "Login successful!") {
+            localStorage.setItem("user", JSON.stringify({ username: name }));
+            setTimeout(() => {
+              window.location.href = "DailyCart.html";
+            }, 1000);
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+          showDialog("An error occurred. Please try again.");
+        });
+    }
+
+    function showDialog(message) {
+      dialogMessage.innerText = message;
+      dialogBox.style.display = "block";
+    }
+
+    function handleDialogClick() {
+      dialogBox.style.display = "none";
+      // After dialog closes, switch forms if needed
+      if (dialogMessage.innerText === "User registered successfully!") {
+        showLogin();
+      } else if (dialogMessage.innerText === "Login successful!") {
+        window.location.href = "DailyCart.html";
+      }
+    }
+
+    // Set default form view
+    showSignUp();
+  </script>
+</body>
+</html>

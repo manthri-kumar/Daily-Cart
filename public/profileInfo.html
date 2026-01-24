@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>User Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&family=Lato&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background-color: #f3f3f3;
+    }
+
+    .head {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background-color: #f8ae0f;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 3.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .head h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: black;
+    }
+
+    .head h1 span {
+      color: white;
+    }
+
+    .head ul {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .head ul li {
+      margin: 0 1rem;
+    }
+
+    .head ul li a {
+      text-decoration: none;
+      color: white;
+    }
+
+    .head ul li a:hover {
+      color: rgb(4, 44, 0);
+    }
+
+    .container {
+      background-color: #fefefe;
+      max-width: 1200px;
+      margin: 6rem auto;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 20px 30px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      background-color: transparent;
+      border: 2px solid #f8ae0f;
+      color: #f8ae0f;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-button.active {
+      background-color: #f8ae0f;
+      color: white;
+    }
+
+    .section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #ddd;
+      padding: 20px 0;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+    }
+
+    .section-label {
+      flex: 1;
+    }
+
+    .section-label strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .section-label small {
+      color: #555;
+      font-size: 13px;
+    }
+
+    .section-value {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .action-btn {
+      background: transparent;
+      border: 1px solid #666;
+      padding: 6px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .action-btn:hover {
+      background-color: #f0f0f0;
+    }
+
+    .warning {
+      color: #e69100;
+      font-weight: bold;
+      margin-right: 4px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="head">
+    <h1>Daily <span>Cart</span></h1>
+    <ul>
+      <li><a href="DailyCart.html">Home</a></li>
+      <li><a href="Vegitable.html">Vegetables</a></li>
+      <li><a href="About.html" style="padding-right: 3rem;">About Us</a></li>
+    </ul>
+  </header>
+
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-button active" onclick="showTab('login')">Login and Security</button>
+      <button class="tab-button" onclick="showTab('personal')">Personal Information</button>
+    </div>
+
+    <!-- Login and Security Section -->
+    <div id="login" class="tab-content active">
+      <h2>Login and Security</h2>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Name</strong>
+          <div class="section-value" id="name">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('name')">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Email</strong>
+          <div class="section-value" id="email">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('email')">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Passkey</strong>
+          <small><span class="warning">⚠</span>Sign in using your device passkey (face, fingerprint, or PIN).</small>
+        </div>
+        <button class="action-btn">Set up</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Password</strong>
+          <div class="section-value" id="password">************</div>
+        </div>
+        <button class="action-btn" onclick="editField('password', true)">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>2-step verification</strong>
+          <small><span class="warning">⚠</span>Add a code verification step for extra security.</small>
+        </div>
+        <button class="action-btn">Turn on</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Compromised account?</strong>
+          <small>Change your password and sign out of all devices.</small>
+        </div>
+        <button class="action-btn">Start</button>
+      </div>
+    </div>
+
+    <!-- Personal Information Section -->
+    <div id="personal" class="tab-content">
+      <h2>Personal Information</h2>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Name</strong>
+          <div class="section-value" id="pname">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('pname', false, true)">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Gender</strong>
+          <div class="section-value" id="gender">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('gender', false, true)">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Date of Birth</strong>
+          <div class="section-value" id="dob">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('dob', false, true)">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Phone</strong>
+          <div class="section-value" id="phone">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('phone', false, true)">Edit</button>
+      </div>
+
+      <div class="section">
+        <div class="section-label">
+          <strong>Address</strong>
+          <div class="section-value" id="address">Loading...</div>
+        </div>
+        <button class="action-btn" onclick="editField('address', false, true)">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let user = JSON.parse(localStorage.getItem('user')) || {};
+
+    function populateFields() {
+      document.getElementById('name').innerText = user.username || "Not set";
+      document.getElementById('email').innerText = user.email || "Not set";
+      document.getElementById('password').innerText = user.password ? '************' : "Not set";
+
+      document.getElementById('pname').innerText = user.username || "Not set";
+      document.getElementById('gender').innerText = user.gender || "Not set";
+      document.getElementById('dob').innerText = user.dob || "Not set";
+      document.getElementById('phone').innerText = user.phone || "Not set";
+      document.getElementById('address').innerText = user.address || "Not set";
+    }
+
+    function editField(fieldId, isPassword = false, isPersonal = false) {
+      const currentValue = user[fieldId] || '';
+      const label = fieldId === 'pname' ? 'name' : fieldId;
+      const newValue = prompt(`Update your ${label}:`, currentValue);
+      if (newValue) {
+        const key = (fieldId === 'pname') ? 'username' : fieldId;
+        user[key] = newValue;
+        localStorage.setItem('user', JSON.stringify(user));
+        populateFields();
+      }
+    }
+
+    function showTab(tabId) {
+      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+      document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add("active");
+      document.getElementById(tabId).classList.add("active");
+    }
+
+    populateFields();
+
+    async function fetchUserDetails() {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch("http://localhost:3000/api/user-details", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        const user = data.user || {};
+        const cart = data.cart || [];
+
+        localStorage.setItem("user", JSON.stringify(user));
+
+        document.getElementById("name").innerText = user.username || "Not set";
+        document.getElementById("email").innerText = user.email || "Not set";
+        document.getElementById("password").innerText = "************";
+
+        const cartDiv = document.createElement("div");
+        cartDiv.classList.add("section");
+        cartDiv.innerHTML = `
+          <div class="section-label">
+            <strong>Cart Items</strong>
+            <div class="section-value">${cart.length ? cart.map(item => item.item_name || item.product_name).join(', ') : 'Empty'}</div>
+          </div>
+        `;
+        document.querySelector(".container").appendChild(cartDiv);
+
+      } catch (err) {
+        console.error("Error fetching user details:", err);
+      }
+    }
+
+    fetchUserDetails();
+
+function populateFields() {
+  document.getElementById('name').innerText = user.username || "Not set";
+  document.getElementById('email').innerText = user.email || "Not set";
+  document.getElementById('password').innerText = user.password ? '************' : "Not set";
+
+  document.getElementById('pname').innerText = user.username || "Not set";
+  document.getElementById('gender').innerText = user.gender || "Not set";
+  document.getElementById('dob').innerText = user.dob || "Not set";
+  document.getElementById('phone').innerText = user.phone || "Not set";
+  document.getElementById('address').innerText = user.address || "Not set";
+}
+
+function editField(fieldId, isPassword = false, isPersonal = false) {
+  const currentValue = user[fieldId] || '';
+  const label = fieldId === 'pname' ? 'name' : fieldId;
+  const newValue = prompt(`Update your ${label}:`, currentValue);
+  if (newValue) {
+    const key = (fieldId === 'pname') ? 'username' : fieldId;
+    user[key] = newValue;
+    localStorage.setItem('user', JSON.stringify(user));
+    populateFields();
+  }
+}
+
+function showTab(tabId) {
+  document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+  document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
+  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add("active");
+  document.getElementById(tabId).classList.add("active");
+}
+
+populateFields();
+
+// Assuming the user's information has been stored in localStorage
+async function fetchUserDetails() {
+  try {
+    const token = localStorage.getItem("token");
+
+    const response = await fetch("http://localhost:3000/api/user-details", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    const user = data.user || {};
+    const cart = data.cart || [];
+
+    localStorage.setItem("user", JSON.stringify(user));
+
+    document.getElementById("name").innerText = user.username || "Not set";
+    document.getElementById("email").innerText = user.email || "Not set";
+    document.getElementById("password").innerText = "************";
+
+    const cartDiv = document.createElement("div");
+    cartDiv.classList.add("section");
+    cartDiv.innerHTML = `
+      <div class="section-label">
+        <strong>Cart Items</strong>
+        <div class="section-value">${cart.length ? cart.map(item => item.item_name || item.product_name).join(', ') : 'Empty'}</div>
+      </div>
+    `;
+    document.querySelector(".container").appendChild(cartDiv);
+
+  } catch (err) {
+    console.error("Error fetching user details:", err);
+  }
+}
+
+  function populateFields() {
+    user = JSON.parse(localStorage.getItem('user')) || {}; // ✅ always use latest
+    document.getElementById('name').textContent = user.name || 'Not set';
+    document.getElementById('email').textContent = user.email || 'Not set';
+    document.getElementById('password').textContent = user.password ? '********' : 'Not set';
+    document.getElementById('address').textContent = user.address || 'Not set';
+  }
+
+  function editField(field) {
+    const newValue = prompt(`Enter new ${field}:`, user[field] || '');
+    if (newValue !== null && newValue.trim() !== '') {
+      user[field] = newValue.trim();
+      localStorage.setItem('user', JSON.stringify(user));
+      populateFields(); // ✅ immediately update display
+    }
+  }
+
+  // Load user data on page load
+  fetchUserDetails();
+
+fetchUserDetails();
+
+  // Tab switching
+  const loginBtn = document.getElementById('tab-login-btn');
+  const personalBtn = document.getElementById('tab-personal-btn');
+  const loginTab = document.getElementById('tab-login');
+  const personalTab = document.getElementById('tab-personal');
+
+  loginBtn.addEventListener('click', () => {
+    loginBtn.classList.add('active');
+    personalBtn.classList.remove('active');
+    loginTab.classList.add('active');
+    personalTab.classList.remove('active');
+  });
+
+  personalBtn.addEventListener('click', () => {
+    personalBtn.classList.add('active');
+    loginBtn.classList.remove('active');
+    personalTab.classList.add('active');
+    loginTab.classList.remove('active');
+  });
+
+  // Simple edit function
+  function editField(spanId, label) {
+    const currentValue = document.getElementById(spanId).textContent;
+    const newValue = prompt(`Edit ${label}:`, currentValue);
+    if (newValue !== null && newValue.trim() !== '') {
+      document.getElementById(spanId).textContent = newValue.trim();
+    }
+  }
+
+  // Attach edit button handlers
+  document.getElementById('edit-name-login').onclick = () => editField('name-login', 'Name');
+  document.getElementById('edit-email-login').onclick = () => editField('email-login', 'Email');
+  document.getElementById('edit-gender-personal').onclick = () => editField('gender-personal', 'Gender');
+  document.getElementById('edit-phone-personal').onclick = () => editField('phone-personal', 'Phone');
+
+
+  </script>
+</body>
+</html>

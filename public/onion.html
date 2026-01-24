@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Page</title>
+    <link rel="stylesheet" href="onion.css">
+</head>
+<body>
+  <body style="font-family: Poppins; background-color: #fff;">
+    <header class="head">
+        <h1 style="text-align: center; color: black;">Daily <span style="color: white;">Cart</span></h1>
+        <ul>
+            <li><a>Home</a></li>
+            <li><a href="Vegitable.html">Vegetables</a></li>
+            <li><a href="About.html">About Us</a></li>
+            <li><a href="/profile.html">Profile</a></li>
+            <div class="search-box">
+                <input type="text" placeholder="search">
+            </div>
+            <button id="search-toggle" class="icon-button cart">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <div class="result-box"></div>
+            </button>
+            <button id="cart-icon" class="icon-button cart">
+                <i class="fa-solid fa-shopping-cart"></i>
+                <span class="quantity">0</span>
+            </button>
+            
+            <div class="nav-container">
+                <div class="menu-icon" onclick="toggleMenu()">☰</div>
+            </div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <ul>
+                    <li><a href="#">Profile</a></li>
+                    <li><a href="seller.html">Seller</a></li>
+                    <li><a href="#">Services</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+        </ul>
+    </header>
+
+    <div id="search-box" class="search-box">
+        <input type="text" placeholder="Search...">
+    </div>
+    <main>
+        <div class="product-card">
+            <!-- Product Image Section and Details Section Combined -->
+            <div class="product-card-content">
+                <div class="product-image">
+                    <img src="assist/vegitable.assist/onion.png" alt="Onion (Pyaz)">
+                </div>
+
+                <div class="product-details">
+                    <h2>Onion (Pyaz)</h2>
+                    <p class="product-description">Fresh Vegetables for your daily needs. Farm-fresh onions with a rich flavor to enhance your meals.</p>
+
+                    <!-- Price & Unit Selector -->
+                    <div class="unit-selector">
+                        <div class="unit-options">
+                            <span class="unit-size">0.95 - 1.05 kg</span>
+                            <span class="price">₹33 <span class="old-price">₹42</span></span>
+                            <button class="add-to-cart">ADD TO CART</button>
+                        </div>
+                        <div class="unit-options">
+                            <span class="unit-size">2 x (0.95 - 1.05 kg)</span>
+                            <span class="price">₹66 <span class="old-price">₹84</span></span>
+                            <button class="add-to-cart">ADD TO CART</button>
+                        </div>
+                    </div>
+
+                    <!-- Health Benefits Section -->
+                    <section class="product-benefits">
+                        <h3>Health Benefits</h3>
+                        <ul>
+                            <li>Enhances Skin & Hair Health</li>
+                            <li>Supports Digestive Health</li>
+                            <li>Boosts Immunity</li>
+                        </ul>
+                    </section>
+
+                    <!-- Why Shop from Us Section -->
+                    <section class="why-shop">
+                        <h3>Why Shop from Us?</h3>
+                        <ul>
+                            <li>Superfast Delivery</li>
+                            <li>Best Prices & Offers</li>
+                            <li>Wide Assortment of Fresh Produce</li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 YourCompany. All rights reserved.</p>
+    </footer>
+</body>
+</html>

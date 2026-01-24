@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Cart</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding-top: 4rem; /* accommodate fixed header */
+      background: #f4f6f8;
+    }
+
+    h1 {
+      text-align: center;
+      color: #f58122;
+      margin-bottom: 30px;
+    }
+
+    .cart-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .cart-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 15px;
+    }
+
+    .item-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .item-name {
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .item-quantity {
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    .item-price {
+      font-weight: bold;
+      color: #333;
+      font-size: 1em;
+    }
+
+    .checkout-summary {
+      margin-top: 30px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.2em;
+      font-weight: bold;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
+    }
+
+    .place-order {
+      margin-top: 20px;
+      width: 100%;
+      background-color: #f58122;
+      color: #fff;
+      border: none;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .place-order:hover {
+      background-color: #d5670c;
+    }
+
+    .empty-cart {
+      text-align: center;
+      color: #777;
+      margin: 20px 0;
+      font-size: 1.1em;
+    }
+
+    /* Fixed Header */
+    header.head {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4rem;
+      background-color: #f8ae0f;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    header.head h1 {
+      color: white;
+      font-size: 1.5rem;
+    }
+
+    header.head ul {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      align-items: center;
+    }
+
+    header.head ul li {
+      margin-left: 2rem;
+    }
+
+    header.head ul li a {
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+    }
+
+    header.head ul li a:hover {
+      color: #042c00;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-around;
+      background-color: #000;
+      color: #fff;
+      padding: 2rem;
+      flex-wrap: wrap;
+      margin-top: 6rem;
+    }
+
+    .footer div {
+      margin: 1rem;
+    }
+
+    .footer ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .footer ul li a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .footer ul li a:hover {
+      color: wheat;
+    }
+
+    .footer img {
+      width: 150px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .title {
+      text-align: center;
+      margin: 1rem 0;
+      color: #fff;
+      background: #000;
+      padding: 0.5rem;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="head">
+    <h1>Daily Cart</h1>
+    <ul>
+      <li><a href="DailyCart.html">Home</a></li>
+      <li><a href="Vegitable.html">Vegetables</a></li>
+      <li><a href="About.html">About Us</a></li>
+      <li><a href="profile.html">Profile</a></li>
+    </ul>
+  </header>
+
+  <div class="cart-container">
+    <h1>My Cart</h1>
+    <div class="cart-items"></div>
+
+    <div class="checkout-summary">
+      <div>Total:</div>
+      <div class="total-amount">₹0.00</div>
+    </div>
+
+    <button class="place-order">Place Order</button>
+  </div>
+
+  <div class="footer">
+    <div>
+      <p>DailyCart</p>
+      <ul>
+        <li><a href="#">About Us</a></li>
+        <li><a href="#">Terms & Conditions</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">DCnow</a></li>
+      </ul>
+    </div>
+    <div>
+      <p>Help</p>
+      <ul>
+        <li><a href="#">FAQs</a></li>
+        <li><a href="#">Contact Us</a></li>
+        <li><a href="#">Vendor Connect</a></li>
+      </ul>
+    </div>
+    <div>
+      <img src="assist/footer/WhatsApp Image 2024-07-26 at 18.29.57_932b7f73.jpg" alt="Footer Image">
+      <p>A MANTHRI Enterprise</p>
+    </div>
+  </div>
+
+  <div class="title">
+    <p>Copyright © 2024-2025 Supermarket Grocery Supplies Pvt Ltd</p>
+  </div>
+
+  <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartItemsContainer = document.querySelector(".cart-items");
+    const totalDisplay = document.querySelector(".total-amount");
+    const placeOrderBtn = document.querySelector(".place-order");
+
+    function updateCartDisplay() {
+      cartItemsContainer.innerHTML = "";
+      let totalAmount = 0;
+
+      if (cart.length === 0) {
+        cartItemsContainer.innerHTML = '<div class="empty-cart">Your cart is empty.</div>';
+        placeOrderBtn.disabled = true;
+        placeOrderBtn.style.backgroundColor = "#ccc";
+        placeOrderBtn.style.cursor = "not-allowed";
+        totalDisplay.textContent = "₹0.00";
+        return;
+      }
+
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.style.backgroundColor = "#f58122";
+      placeOrderBtn.style.cursor = "pointer";
+
+      cart.forEach((item, index) => {
+        totalAmount += item.price * item.quantity;
+
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "cart-item";
+
+        itemDiv.innerHTML = `
+          <img src="${item.image || 'https://via.placeholder.com/60'}" alt="${item.name}" />
+          <div class="item-details">
+            <div class="item-name">${item.name}</div>
+            <div class="item-quantity">
+              <button class="decrease">-</button>
+              <span>${item.quantity}</span>
+              <button class="increase">+</button>
+            </div>
+          </div>
+          <div class="item-price">₹${(item.price * item.quantity).toFixed(2)}</div>
+          <button class="remove"><i class="fa fa-trash"></i></button>
+        `;
+
+        // Event listeners
+        itemDiv.querySelector(".decrease").addEventListener("click", () => {
+          if (item.quantity > 1) {
+            item.quantity--;
+            localStorage.setItem("cart", JSON.stringify(cart));
+            updateCartDisplay();
+          }
+        });
+
+        itemDiv.querySelector(".increase").addEventListener("click", () => {
+          item.quantity++;
+          localStorage.setItem("cart", JSON.stringify(cart));
+          updateCartDisplay();
+        });
+
+        itemDiv.querySelector(".remove").addEventListener("click", () => {
+          cart.splice(index, 1);
+          localStorage.setItem("cart", JSON.stringify(cart));
+          updateCartDisplay();
+        });
+
+        cartItemsContainer.appendChild(itemDiv);
+      });
+
+      totalDisplay.textContent = `₹${totalAmount.toFixed(2)}`;
+    }
+
+    updateCartDisplay();
+
+    placeOrderBtn.addEventListener("click", async () => {
+      const orderDetails = { cart, totalAmount: parseFloat(totalDisplay.textContent.replace("₹","")) };
+
+      try {
+        const response = await fetch("/api/placeorder", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(orderDetails),
+  credentials: "include",   // 🔑 This sends cookies (auth_token)
+});
+
+
+        if (response.ok) {
+          localStorage.setItem("orderDetails", JSON.stringify(orderDetails));
+          localStorage.removeItem("cart");
+          alert("Order placed successfully!");
+          window.location.href = "order.html";
+        } else {
+          const error = await response.json();
+          alert(`Order failed: ${error.message}`);
+        }
+      } catch (err) {
+        console.error("Order error:", err);
+        alert("Something went wrong.");
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

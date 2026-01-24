@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      background: linear-gradient(to bottom, #e6e9f0, #eef1f5);
+      color: #333;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #4CAF50;
+      margin-bottom: 30px;
+    }
+
+    .checkout-container {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    .checkout-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      background: #f8f8f8;
+      border-radius: 8px;
+      transition: transform 0.2s;
+    }
+
+    .checkout-item:hover {
+      transform: scale(1.02);
+    }
+
+    .checkout-total {
+      font-weight: bold;
+      font-size: 1.2em;
+      text-align: right;
+      margin-top: 20px;
+    }
+
+    .place-order {
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+      padding: 15px;
+      font-size: 1em;
+      font-weight: bold;
+      color: white;
+      background-color: #4CAF50;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .place-order:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <h1>Checkout</h1>
+  <div class="checkout-container">
+    <div class="checkout-items">
+      <div class="checkout-item">
+        <span>Beetroot</span>
+        <span>$3 x 1</span>
+      </div>
+      <div class="checkout-item">
+        <span>Orange</span>
+        <span>$7 x 2</span>
+      </div>
+      <div class="checkout-item">
+        <span>Banana</span>
+        <span>$5 x 3</span>
+      </div>
+      <div class="checkout-item">
+        <span>Mango</span>
+        <span>$10 x 2</span>
+      </div>
+      <div class="checkout-item">
+        <span>Cherries</span>
+        <span>$8 x 3</span>
+      </div>
+      <div class="checkout-item">
+        <span>Tomato</span>
+        <span>$4.35 x 2</span>
+      </div>
+      <div class="checkout-item">
+        <span>Carrot</span>
+        <span>$6 x 2</span>
+      </div>
+      <div class="checkout-item">
+        <span>Onion</span>
+        <span>$2.45 x 2</span>
+      </div>
+    </div>
+    <div class="checkout-total">Total: $101.60</div>
+    <button class="place-order">Place Order</button>
+  </div>
+  
+</body>
+</html>

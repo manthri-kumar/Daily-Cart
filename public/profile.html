@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f1f3f6;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            background-color: #ffa333;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-info {
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .menu-items a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .menu-items a:hover {
+            color: #2874f0;
+        }
+
+        .main-content {
+            display: grid;
+            gap: 20px;
+        }
+
+        .stat-card, .card {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-card i {
+            font-size: 24px;
+            color: #2874f0;
+        }
+
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .profile-card {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-detail {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            background-color: #ff8c00;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo">MyAccount</div>
+            <div class="nav-links">
+                <a href="DailyCart.html">Home</a>
+                <a href="vegitable.html">Vegetables</a>
+                <a href="#">Profile</a>
+                <a href="#">Cart</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="user-info">
+                <div class="user-name">
+                    Hey! <span id="username">Guest</span>
+                </div>
+                <button id="logoutButton" class="logout-btn">Logout</button>
+            </div>
+
+            <div class="menu-items">
+                <a href="checkout.html"><i class="fas fa-box"></i> Orders</a>
+                <a href="profileInfo.html"><i class="fas fa-user"></i> Profile Info</a>
+                <a href="#"><i class="fas fa-credit-card"></i> Payment Methods</a>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card profile-card">
+                <h2>Your Profile</h2>
+                <hr style="margin: 10px 0;">
+                <div class="profile-detail">
+                    <i class="fas fa-user-circle"></i> Username: <span id="profileUsername"></span>
+                </div>
+                <div class="profile-detail">
+                    <i class="fas fa-envelope"></i> Email: <span id="profileEmail"></span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <i class="fas fa-bolt"></i>
+                <div>
+                    <div style="font-weight: bold;">Points</div>
+                    <div id="points" style="color: #878787;">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Recent Activities</h2>
+                <p>Your latest updates and interactions will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Retrieve user from localStorage
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        if (user && user.username && user.email) {
+            document.getElementById("username").textContent = user.username;
+            document.getElementById("profileUsername").textContent = user.username;
+            document.getElementById("profileEmail").textContent = user.email;
+        } else {
+            // Redirect to login if no user data is found
+            window.location.href = "login.html";
+        }
+
+        document.getElementById("logoutButton").addEventListener("click", () => {
+            localStorage.removeItem("user");
+            alert("Logged out successfully!");
+            window.location.href = "login.html";
+        });
+
+    if (user && user.email) {
+      const displayName = user.username || user.email.split("@")[0];
+      document.getElementById("username").textContent = displayName;
+      document.getElementById("profileEmail").textContent = user.email;
+    } else {
+      window.location.href = "login.html";
+    }
+
+    // Logout button
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("user");
+      alert("Logged out successfully!");
+      window.location.href = "login.html";
+    });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Cart Address Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f5f7;
+        }
+
+        /* Invisible header with logo */
+        .header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: transparent; /* Invisible header */
+            z-index: 1000; /* Keeps the header above the rest */
+        }
+
+        .header img {
+            width: 150px; /* Adjust size as needed */
+            height: auto;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 100px auto; /* Adjusted for the space taken by the header */
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="tel"], input[type="email"], input[type="number"], select {
+            width: 100%;
+            padding: 12px;
+            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus, input[type="tel"]:focus, input[type="email"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #ff8a03;
+        }
+
+        .form-group input {
+            margin-bottom: 10px;
+        }
+
+        .address-type {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+
+        .address-type input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 12px 30px;
+            background-color: #ff8800;
+            border: none;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #98583c;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Invisible header with DailyCart logo -->
+    <div class="header">
+        <img src="assist/icon/Daily-removebg-preview.png" alt="DailyCart Logo">
+    </div>
+
+    <div class="container">
+        <h2>Enter Shipping Address</h2>
+        <form action="#" method="POST">
+            <!-- Name field -->
+            <div class="form-group">
+                <label for="full-name">Full Name</label>
+                <input type="text" id="full-name" name="full-name" placeholder="John Doe" required>
+            </div>
+
+            <!-- Mobile number -->
+            <div class="form-group">
+                <label for="mobile-number">Mobile Number</label>
+                <input type="tel" id="mobile-number" name="mobile-number" placeholder="123-456-7890" required>
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" id="address" name="address" placeholder="123 Main Street, Apt 4B" required>
+            </div>
+
+            <!-- Landmark -->
+            <div class="form-group">
+                <label for="landmark">Landmark (Optional)</label>
+                <input type="text" id="landmark" name="landmark" placeholder="Near Central Park">
+            </div>
+
+            <!-- City -->
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" placeholder="City Name" required>
+            </div>
+
+            <!-- State -->
+            <div class="form-group">
+                <label for="state">State</label>
+                <input type="text" id="state" name="state" placeholder="State Name" required>
+            </div>
+
+            <!-- Zip Code -->
+            <div class="form-group">
+                <label for="zip-code">Pin Code</label>
+                <input type="text" id="zip-code" name="zip-code" placeholder="123456" required>
+            </div>
+
+            <!-- Address type (Home or Office) -->
+            <div class="form-group address-type">
+                <div>
+                    <input type="radio" id="home" name="address-type" value="home" required>
+                    <label for="home">Home</label>
+                </div>
+                <div>
+                    <input type="radio" id="office" name="address-type" value="office" required>
+                    <label for="office">Office</label>
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit">Save & Proceed</button>
+        </form>
+    </div>
+
+</body>
+</html>

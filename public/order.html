@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .order-container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .items {
+      margin-top: 20px;
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .button {
+        display: inline-block;
+        padding: 10px 20px;
+        color: #fff;
+        background-color: #ea7a3a;
+        text-decoration: none;
+        border-radius: 5px;
+        text-align: center;
+    }
+
+    .button:hover {
+        background-color: #df8f21;
+    }
+  </style>
+</head>
+<body>
+  <div class="order-container">
+    <div class="header">
+      <h1 id="orderId">Order ID: </h1>
+      <a href="DailyCart.html" class="button">Create New Order</a>
+
+    </div>
+    <p id="orderDate"><strong>Order Date:</strong> </p>
+    <p id="deliveryDate"><strong>Estimated Delivery:</strong> </p>
+    <hr>
+    <h2>Items</h2>
+    <div id="itemsList" class="items"></div>
+    <hr>
+    <h2>Total Payment</h2>
+    <p id="paymentAmount"></p>
+    
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // Retrieve order details from localStorage
+      const orderDetails = JSON.parse(localStorage.getItem("orderDetails"));
+
+      if (!orderDetails) {
+        alert("No order details found. Redirecting to checkout.");
+        window.location.href = "checkout.html"; // Redirect back to checkout
+        return;
+      }
+
+      // Generate Order ID and Dates
+      const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const currentDate = new Date();
+      const deliveryDate = new Date(currentDate);
+      deliveryDate.setDate(currentDate.getDate() + 7);
+
+      // Display Order Details
+      document.getElementById("orderId").textContent = `Order ID: ${orderId}`;
+      document.getElementById("orderDate").textContent = `Order Date: ${currentDate.toDateString()}`;
+      document.getElementById("deliveryDate").textContent = `Estimated Delivery: ${deliveryDate.toDateString()}`;
+      document.getElementById("paymentAmount").textContent = `$${orderDetails.totalAmount}`;
+
+      const itemsList = document.getElementById("itemsList");
+      orderDetails.cart.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<span>${item.name}</span><span>$${(item.price * item.quantity).toFixed(2)}</span>`;
+        itemsList.appendChild(div);
+      });
+      document.addEventListener("DOMContentLoaded", () => {
+  // Retrieve order details from localStorage
+  const orderDetails = JSON.parse(localStorage.getItem("orderDetails"));
+
+  if (!orderDetails) {
+    alert("No order details found. Redirecting to checkout.");
+    window.location.href = "checkout.html"; // Redirect back to checkout
+    return;
+  }
+
+  // Generate Order ID and Dates
+  const orderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  const currentDate = new Date();
+  const deliveryDate = new Date(currentDate);
+  deliveryDate.setDate(currentDate.getDate() + 7);
+
+  // Display Order Details
+  document.getElementById("orderId").textContent = `Order ID: ${orderId}`;
+  document.getElementById("orderDate").textContent = `Order Date: ${currentDate.toDateString()}`;
+  document.getElementById("deliveryDate").textContent = `Estimated Delivery: ${deliveryDate.toDateString()}`;
+  document.getElementById("paymentAmount").textContent = `$${orderDetails.totalAmount.toFixed(2)}`;
+
+  const itemsList = document.getElementById("itemsList");
+  orderDetails.cart.forEach((item) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `<span>${item.name}</span><span>$${(item.price * item.quantity).toFixed(2)}</span>`;
+    itemsList.appendChild(div);
+  });
+
+  // Send data to the server when the page loads
+  const token = localStorage.getItem("token"); // Assume token is saved during login
+
+  fetch("http://localhost:5001/place-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      cart: orderDetails.cart,
+      totalAmount: orderDetails.totalAmount,
+    }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Failed to place order");
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log("Order placed successfully:", data);
+      alert(`Order placed successfully! Your Order ID is ${data.orderId}.`);
+    })
+    .catch((error) => {
+      console.error("Error placing order:", error);
+      alert("An error occurred while placing your order. Please try again.");
+    });
+});
+
+// Function to redirect to the checkout page
+function goToCheckout() {
+  localStorage.removeItem("orderDetails"); // Clear stored data
+  window.location.href = "DialyCart.html"; // Redirect to the checkout page
+}
+
+
+}    );
+
+  </script>
+</body>
+</html>
