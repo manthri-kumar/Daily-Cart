@@ -1,11 +1,4 @@
-# Node dependencies
 node_modules/
-
-# Environment variables
 .env
-
-# Lock file
 package-lock.json
-
-# Editor settings
 .vscode/
