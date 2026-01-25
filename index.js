@@ -10,264 +10,291 @@ const QRCode = require("qrcode");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const cookieParser = require("cookie-parser");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5001;
 
-/* =======================
-   MIDDLEWARE
-======================= */
-
+// Middleware
 app.use(cors({
-  origin: true,
-  credentials: true
+  origin: "http://localhost:3000", // Adjust frontend origin
+  credentials: true,
 }));
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-
 app.use(express.static(path.join(__dirname, "public")));
 
+// Session middleware (required for Passport)
 app.use(session({
-  secret: process.env.SESSION_SECRET || "session_secret",
+  secret: process.env.SESSION_SECRET || "your-session-secret",
   resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax"
-  }
+  saveUninitialized: true,
 }));
 
+// Initialize Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* =======================
-   DATABASE CONNECTION
-======================= */
-
+// MySQL connection
 const connection = mysql.createConnection({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  }
 });
-
 
 connection.connect(err => {
   if (err) {
-    console.error("❌ Database connection failed:", err);
+    console.error("Error connecting to database:", err);
     process.exit(1);
   }
-  console.log("✅ Connected to MySQL database");
+  console.log("Connected to MySQL database.");
 });
 
-/* =======================
-   AUTH CONFIG
-======================= */
+// JWT Secret
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
-const JWT_SECRET = process.env.JWT_SECRET || "jwt_secret";
+// Passport serialize/deserialize user
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
 
-passport.serializeUser((user, done) => done(null, user));
-passport.deserializeUser((obj, done) => done(null, obj));
-
-passport.use(new GoogleStrategy(
-  {
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: `${process.env.BASE_URL}/auth/google/callback`
+// Configure Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID",
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET || "YOUR_GOOGLE_CLIENT_SECRET",
+    callbackURL: "http://localhost:5001/auth/google/callback"
   },
-  (accessToken, refreshToken, profile, done) => {
+  function(accessToken, refreshToken, profile, done) {
+    // TODO: Save or find user in your database here
     return done(null, profile);
   }
 ));
 
-/* =======================
-   ROUTES
-======================= */
-
+// Root route - serves login page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-/* ---------- SIGNUP ---------- */
-
+// ---------------------- SIGNUP WITH 2FA ----------------------
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).json({ message: "All fields required" });
+    return res.status(400).json({ error: true, message: "Please provide all fields" });
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: true, message: "Invalid email format" });
   }
 
   try {
-    const [existing] = await connection.promise().query(
+    const [existingUser] = await connection.promise().query(
       "SELECT * FROM user WHERE email = ?",
       [email]
     );
 
-    if (existing.length > 0) {
-      return res.status(409).json({ message: "Email already exists" });
+    if (existingUser.length > 0) {
+      return res.status(409).json({ error: true, message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Insert new user
     await connection.promise().query(
       "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
       [username, email, hashedPassword]
     );
 
-    const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
+    // Generate 2FA secret
+    const secret = speakeasy.generateSecret({ name: `YourApp (${email})` });
 
+    // Store 2FA secret in DB
     await connection.promise().query(
       "UPDATE user SET twofa_secret = ? WHERE email = ?",
       [secret.base32, email]
     );
 
-    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
+    // Generate QR code for authenticator apps
+    QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+      if (err) {
+        return res.status(500).json({ error: true, message: "QR code generation failed" });
+      }
 
-    res.status(201).json({
-      message: "Signup successful",
-      qrCode,
-      secret: secret.base32
+      return res.status(201).json({
+        message: "User registered successfully!",
+        qrCode: data_url,
+        secret: secret.base32,
+      });
     });
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Signup failed" });
+    res.status(500).json({ error: true, message: "Signup failed" });
   }
 });
 
-/* ---------- LOGIN ---------- */
-
+// ---------------------- LOGIN WITH 2FA ----------------------
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, token } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: true, message: "Email and password are required" });
+  }
 
   try {
-    const [users] = await connection.promise().query(
-      "SELECT * FROM user WHERE email = ?",
-      [email]
-    );
+    const [results] = await connection.promise().query("SELECT * FROM user WHERE email = ?", [email]);
 
-    if (users.length === 0) {
-      return res.status(401).json({ message: "User not found" });
+    if (results.length === 0) {
+      return res.status(401).json({ error: true, message: "User not found" });
     }
 
-    const user = users[0];
-    const match = await bcrypt.compare(password, user.password);
+    const user = results[0];
+    const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!match) {
-      return res.status(401).json({ message: "Invalid password" });
+    if (!isMatch) {
+      return res.status(401).json({ error: true, message: "Invalid password"});
     }
 
-    const token = jwt.sign(
+  
+
+    // Create JWT token
+    const jwtToken = jwt.sign(
       { id: user.id, username: user.username },
       JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    res.cookie("auth_token", token, {
+    // Set cookie (adjust options for production HTTPS)
+    res.cookie("auth_token", jwtToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 3600000
+      maxAge: 3600000, // 1 hour
     });
 
-    res.json({
+    res.status(200).json({
       message: "Login successful",
-      user: { username: user.username, email: user.email }
+      user: { username: user.username, email: user.email },
     });
-
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Login failed" });
+    res.status(500).json({ error: true, message: "Login failed" });
   }
 });
 
-/* ---------- JWT MIDDLEWARE ---------- */
-
+// ---------------------- AUTH MIDDLEWARE ----------------------
 const authenticateJWT = (req, res, next) => {
-  const token = req.cookies.auth_token;
+  const cookieHeader = req.headers.cookie || "";
+  const cookies = Object.fromEntries(
+    cookieHeader.split("; ").map((c) => {
+      const [key, v] = c.split("=");
+      return [key, v];
+    })
+  );
+
+  const token = cookies["auth_token"];
 
   if (!token) {
-    return res.status(403).json({ message: "Unauthorized" });
+    return res.status(403).json({ error: true, message: "Access denied" });
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
+    if (err) {
+      return res.status(403).json({ error: true, message: "Invalid token" });
+    }
+
     req.user = user;
     next();
   });
 };
 
-/* ---------- PLACE ORDER ---------- */
-
+// ---------------------- PLACE ORDER ----------------------
 app.post("/api/placeorder", authenticateJWT, (req, res) => {
   const { cart, totalAmount } = req.body;
 
-  if (!cart || !Array.isArray(cart)) {
+  if (!cart || !totalAmount || !Array.isArray(cart) || cart.length === 0) {
     return res.status(400).json({ message: "Invalid order data" });
   }
 
+  const userId = req.user.id;
   const orderId = `ORD-${Date.now()}`;
   const orderDate = new Date().toISOString().split("T")[0];
-  const deliveryDate = new Date(Date.now() + 7 * 86400000)
+  const deliveryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
+  const itemsJson = JSON.stringify(cart);
+
+  const query = `
+    INSERT INTO orders (order_id, user_id, order_date, delivery_date, total_payment, items)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
 
   connection.query(
-    `INSERT INTO orders 
-     (order_id, user_id, order_date, delivery_date, total_payment, items)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [
-      orderId,
-      req.user.id,
-      orderDate,
-      deliveryDate,
-      totalAmount,
-      JSON.stringify(cart)
-    ],
-    err => {
+    query,
+    [orderId, userId, orderDate, deliveryDate, totalAmount, itemsJson],
+    (err) => {
       if (err) {
-        console.error(err);
-        return res.status(500).json({ message: "Order failed" });
+        console.error("Error inserting order:", err);
+        return res.status(500).json({ message: "Failed to place order" });
       }
 
-      res.json({ message: "Order placed", orderId });
+      res.status(200).json({
+        message: "Order placed successfully!",
+        orderId,
+      });
     }
   );
 });
 
-/* ---------- GOOGLE AUTH ---------- */
+// ---------------------- GOOGLE OAUTH ROUTES ----------------------
 
-app.get("/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"]
+// Start OAuth flow
+app.get('/auth/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
   })
 );
 
-app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+// OAuth callback - redirect to DailyCart.html with flag
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
   (req, res) => {
-    res.redirect("/DailyCart.html");
+    res.redirect('/DailyCart.html?justLoggedIn=true');
   }
 );
 
-app.get("/logout", (req, res) => {
+// Protect DailyCart route
+app.get('/DailyCart.html', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.sendFile(path.join(__dirname, "public", "DailyCart.html"));
+  } else {
+    res.redirect('/login');
+  }
+});
+
+// Serve login page
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
+// Logout route
+app.get('/logout', (req, res) => {
   req.logout(() => {
-    res.redirect("/login");
+    res.redirect('/login');
   });
 });
 
-/* =======================
-   START SERVER
-======================= */
+// Serve other frontend pages
+app.get("/order.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "order.html"));
+});
 
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
