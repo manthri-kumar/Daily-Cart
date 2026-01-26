@@ -4,8 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sign Up / Login</title>
+
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+
   <style>
     body {
       background-color: #fff;
@@ -17,12 +19,12 @@
       font-family: 'Poppins', sans-serif;
     }
     .form-card {
-      border-radius: 50px;
+      border-radius: 40px;
       width: 350px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 5px 15px rgba(0,0,0,.2);
       background: #f9f9f9;
+      padding: 25px;
       text-align: center;
-      padding: 20px;
     }
     .btn-box {
       width: 220px;
@@ -37,9 +39,8 @@
       cursor: pointer;
       background: transparent;
       border: 0;
-      position: relative;
-      z-index: 1;
       font-weight: bold;
+      z-index: 1;
     }
     .btn {
       position: absolute;
@@ -49,248 +50,200 @@
       height: 100%;
       background: linear-gradient(to right, #ff8c00, #e26b6b);
       border-radius: 30px;
-      transition: 0.5s;
+      transition: .4s;
     }
     .input-container {
       position: relative;
-      margin: 15px 0;
+      margin: 12px 0;
     }
     input {
-      padding: 10px 10px 10px 40px;
       width: 90%;
-      border-radius: 50px;
+      padding: 10px 10px 10px 40px;
+      border-radius: 30px;
       border: 1px solid #ccc;
     }
     .icon {
       position: absolute;
-      left: 10px;
+      left: 12px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 20px;
       color: #888;
     }
     .signin {
-      margin-top: 20px;
-      padding: 10px;
       width: 100%;
+      margin-top: 15px;
+      padding: 10px;
       border: none;
-      border-radius: 50px;
-      cursor: pointer;
+      border-radius: 30px;
       background: #ff8c00;
       color: #fff;
       font-weight: bold;
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin: 10px 0 5px;
-    }
-    #message {
-      color: #000000;
-      margin-top: 10px;
-    }
-
-    /* Custom Dialog Box */
-    .dialog-box {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-      width: 300px;
-      text-align: center;
-      z-index: 1000;
-    }
-    .dialog-box button {
-      background-color: #ff8c00;
-      color: white;
-      border: none;
-      padding: 10px;
-      width: 100%;
-      border-radius: 50px;
       cursor: pointer;
     }
-
-    /* Google Button Styles */
     .google-btn {
-      background-color: #ffffff;
-      font-weight: bold;
-      padding: 12px 24px;
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 30px;
       border: none;
-      border-radius: 25px;
+      background: #fff;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
-      width: 220px;
       display: flex;
-      align-items: center;
       justify-content: center;
-      margin-left: auto;
-      margin-right: auto;
-      color: black;
-    }
-    .google-btn:hover {
-      background-color: orange;
+      align-items: center;
     }
     .google-btn i {
       margin-right: 8px;
     }
+    .dialog-box {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      justify-content: center;
+      align-items: center;
+    }
+    .dialog-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 15px;
+      width: 300px;
+      text-align: center;
+    }
   </style>
 </head>
+
 <body>
-  <div class="form-card">
-    <div class="btn-box">
-      <div class="btn" id="btn"></div>
-      <button type="button" class="toggle-btn" onclick="showLogin()">Log In</button>
-      <button type="button" class="toggle-btn" onclick="showSignUp()">Sign Up</button>
-    </div>
-    <div id="form-container">
-      <!-- Sign-Up Form -->
-      <div id="signup" class="form-content signup">
-        <label for="signupName">Username</label>
-        <div class="input-container">
-          <i class="fa-solid fa-user icon"></i>
-          <input type="text" id="signupName" placeholder="Enter your username" required />
-        </div>
-        <label for="signupEmail">E-mail</label>
-        <div class="input-container">
-          <i class="fa-solid fa-envelope icon"></i>
-          <input type="email" id="signupEmail" placeholder="Enter your E-mail" required />
-        </div>
-        <label for="signupPassword">Password</label>
-        <div class="input-container">
-          <i class="fa-solid fa-lock icon"></i>
-          <input type="password" id="signupPassword" placeholder="Enter your password" required />
-        </div>
-        <button type="button" class="signin" onclick="signUp()">Sign Up</button>
-      </div>
-   
-      <!-- Login Form -->
-      <div id="login" class="form-content login" style="display: none;">
-        <label for="loginEmail">E-mail</label>
-        <div class="input-container">
-          <i class="fa-solid fa-envelope icon"></i>
-          <input type="email" id="loginEmail" placeholder="Enter your E-mail" required />
-        </div>
-        <label for="loginPassword">Password</label>
-        <div class="input-container">
-          <i class="fa-solid fa-lock icon"></i>
-          <input type="password" id="loginPassword" placeholder="Enter your password" required />
-        </div>
-        <!-- 2FA token field (hidden initially) -->
-        <div class="input-container" id="token-wrapper" style="display:none;">
-          <i class="fa-solid fa-key icon"></i>
-          <input type="text" id="loginToken" placeholder="Enter 2FA Token" />
-        </div>
-        <button type="button" class="signin" onclick="logIn()">Log In</button>
-      </div>
 
-      <!-- Google Sign-In Button -->
-     <button class="google-btn" onclick="googleLogin()">
-      <i class="fa-brands fa-google"></i> Sign in with Google
-    </button>
+<div class="form-card">
 
-    </div>
+  <div class="btn-box">
+    <div class="btn" id="btn"></div>
+    <button class="toggle-btn" onclick="showLogin()">Log In</button>
+    <button class="toggle-btn" onclick="showSignUp()">Sign Up</button>
   </div>
 
-  <!-- Custom Dialog Box -->
-  <div id="dialogBox" class="dialog-box">
+  <!-- SIGNUP -->
+  <div id="signup">
+    <div class="input-container">
+      <i class="fa fa-user icon"></i>
+      <input id="signupName" placeholder="Username">
+    </div>
+    <div class="input-container">
+      <i class="fa fa-envelope icon"></i>
+      <input id="signupEmail" type="email" placeholder="Email">
+    </div>
+    <div class="input-container">
+      <i class="fa fa-lock icon"></i>
+      <input id="signupPassword" type="password" placeholder="Password">
+    </div>
+    <button class="signin" onclick="signUp()">Sign Up</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login" style="display:none">
+    <div class="input-container">
+      <i class="fa fa-envelope icon"></i>
+      <input id="loginEmail" type="email" placeholder="Email">
+    </div>
+    <div class="input-container">
+      <i class="fa fa-lock icon"></i>
+      <input id="loginPassword" type="password" placeholder="Password">
+    </div>
+    <button class="signin" onclick="logIn()">Log In</button>
+  </div>
+
+  <button class="google-btn" onclick="googleLogin()">
+    <i class="fa-brands fa-google"></i> Sign in with Google
+  </button>
+
+</div>
+
+<!-- Dialog -->
+<div class="dialog-box" id="dialogBox">
+  <div class="dialog-content">
     <p id="dialogMessage"></p>
-    <button onclick="handleDialogClick()">OK</button>
+    <button class="signin" onclick="closeDialog()">OK</button>
   </div>
+</div>
 
-  <script>
-    const loginForm = document.getElementById("login");
-    const signupForm = document.getElementById("signup");
-    const btn = document.getElementById("btn");
-    const dialogBox = document.getElementById("dialogBox");
-    const dialogMessage = document.getElementById("dialogMessage");
+<script>
+const BASE_URL = "https://daily-cart-hqyw.onrender.com";
 
-    function showSignUp() {
-      loginForm.style.display = "none";
-      signupForm.style.display = "block";
-      btn.style.left = "110px";
-    }
+const loginBox = document.getElementById("login");
+const signupBox = document.getElementById("signup");
+const btn = document.getElementById("btn");
+const dialogBox = document.getElementById("dialogBox");
+const dialogMessage = document.getElementById("dialogMessage");
 
-    function showLogin() {
-      signupForm.style.display = "none";
-      loginForm.style.display = "block";
-      btn.style.left = "0px";
-    }
+function showLogin() {
+  signupBox.style.display = "none";
+  loginBox.style.display = "block";
+  btn.style.left = "0";
+}
 
-    function signUp() {
-      const username = document.getElementById("signupName").value;
-      const email = document.getElementById("signupEmail").value;
-      const password = document.getElementById("signupPassword").value;
+function showSignUp() {
+  loginBox.style.display = "none";
+  signupBox.style.display = "block";
+  btn.style.left = "110px";
+}
 
-      fetch("http://localhost:5001/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          dialogMessage.innerText = data.message;
-          dialogBox.style.display = "block";
-        })
-        .catch((error) => {
-          dialogMessage.innerText = "An error occurred.";
-          dialogBox.style.display = "block";
-          console.error(error);
-        });
-    }
+function openDialog(msg) {
+  dialogMessage.innerText = msg;
+  dialogBox.style.display = "flex";
+}
 
-    function logIn() {
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      const token = document.getElementById("loginToken").value;
+function closeDialog() {
+  dialogBox.style.display = "none";
+}
 
-      fetch("http://localhost:5001/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, token }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          dialogMessage.innerText = data.message;
-          dialogBox.style.display = "block";
+/* SIGNUP */
+function signUp() {
+  fetch(`${BASE_URL}/signup`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: signupName.value,
+      email: signupEmail.value,
+      password: signupPassword.value
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    openDialog(d.message);
+    if (d.message.includes("success")) showLogin();
+  })
+  .catch(() => openDialog("Signup failed"));
+}
 
-          if (data.twofaRequired) {
-            document.getElementById("token-wrapper").style.display = "block";
-          } else if (data.message === "Login successful") {
-            // Store both username and email in localStorage
-            localStorage.setItem("user", JSON.stringify({ 
-                username: data.user.username, 
-                email: data.user.email 
-            }));
-            setTimeout(() => {
-              window.location.href = "DailyCart.html";
-            }, 1000);
-          }
-        })
-        .catch((error) => {
-          dialogMessage.innerText = "Login failed.";
-          dialogBox.style.display = "block";
-          console.error(error);
-        });
-    }
+/* LOGIN */
+function logIn() {
+  fetch(`${BASE_URL}/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      email: loginEmail.value,
+      password: loginPassword.value
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.message === "Login successful") {
+      localStorage.setItem("user", JSON.stringify(d.user));
+      window.location.href = "/DailyCart.html?justLoggedIn=true";
+    } else {
+      openDialog(d.message);
+    }
+  })
+  .catch(() => openDialog("Login failed"));
+}
 
-    function handleDialogClick() {
-      dialogBox.style.display = "none";
-      if (dialogMessage.innerText === "User registered successfully!") {
-        showLogin();
-      }
-    }
+function googleLogin() {
+  window.location.href = `${BASE_URL}/auth/google`;
+}
+</script>
 
-    function googleLogin() {
-      window.location.href = "/auth/google";
-    }
-
-  </script>
 </body>
 </html>

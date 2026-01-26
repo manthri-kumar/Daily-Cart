@@ -247,12 +247,9 @@ app.get("/auth/google/callback",
 
 /* ---------- PAGES ---------- */
 app.get("/DailyCart.html", (req, res) => {
-  if (req.isAuthenticated()) {
-    res.sendFile(path.join(__dirname, "public", "DailyCart.html"));
-  } else {
-    res.redirect("/login");
-  }
+  res.sendFile(path.join(__dirname, "public", "DailyCart.html"));
 });
+
 
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
