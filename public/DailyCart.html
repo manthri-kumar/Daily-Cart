@@ -327,101 +327,58 @@
     </dialog>
 
     <script src="./DailtyCart.js"></script>
-    <script>
-        // Simulate login by saving the username in localStorage 
-        function login(username) {
-            localStorage.setItem('username', username);
-            updateLoginStatus();
-        }
 
-        // Update the login status based on the stored username
-        function updateLoginStatus() {
-            const username = localStorage.getItem('username');
-            if (username) {
-                document.getElementById('profile-link').textContent = username;
-            }
-        }
+<script>
+const BASE_URL = "https://daily-cart-hqyw.onrender.com";
 
-        // Call updateLoginStatus when the page loads
-        updateLoginStatus();
-    </script>
-    <form id="addToCartForm">
-        <input type="hidden" id="user_id" value="1" /> <input type="number" id="product_id" value="101" /> <input type="number" id="quantity" value="1" />
-        <button type="submit">Add to Cart</button>
-    </form>
-    
-    <script>
-        document.getElementById("addToCartForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-    
-            const user_id = document.getElementById("user_id").value;
-            const product_id = document.getElementById("product_id").value;
-            const quantity = document.getElementById("quantity").value;
-    
-            fetch("/add-to-cart", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ user_id, product_id, quantity })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
-        });
-        document.addEventListener("DOMContentLoaded", () => {
-            const cartIcon = document.getElementById("cart-icon");
-            const cartQuantity = cartIcon.querySelector(".quantity");
-            const addButtons = document.querySelectorAll(".card .btn button");
+/* ================= USER SESSION CHECK ================= */
+const user = JSON.parse(localStorage.getItem("user"));
 
-            let cartCount = 0;
+if (!user || !user.email) {
+  // Not logged in → go to login page
+  window.location.href = "login.html";
+}
 
-            addButtons.forEach((button) => {
-                button.addEventListener("click", () => {
-                    // Increment the cart count
-                    cartCount++;
-                    cartQuantity.textContent = cartCount;
+/* ================= CART UI COUNT ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const cartIcon = document.getElementById("cart-icon");
+  if (!cartIcon) return;
 
-                
-                });
-            });
-        });
-        
-       function goToProfile() {
-      window.location.href = "/profileInfo.html"; // Change to your actual profile page route
-    }
+  const cartQuantity = cartIcon.querySelector(".quantity");
+  const addButtons = document.querySelectorAll(".card .btn button");
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("justLoggedIn") === "true") {
-        setTimeout(() => {
-          const dialog = document.getElementById("profileDialog");
-          if (typeof dialog.showModal === "function") {
-            dialog.showModal();
-          }
-        }, 2500); // 2.5 second delay
+  let cartCount = 0;
 
-        // Remove query param to avoid re-showing on refresh
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+  addButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      cartCount++;
+      cartQuantity.textContent = cartCount;
     });
-      // Get user from localStorage
-    const user = JSON.parse(localStorage.getItem("user"));
+  });
+});
 
-    if (user && user.email) {
-      const displayName = user.username || user.email.split("@")[0];
-      document.getElementById("welcomeUser").textContent = displayName;
-      document.getElementById("userEmail").textContent = user.email;
-    } else {
-      // Redirect to login if no user data is found
-      window.location.href = "login.html";
-    }
-    </script>
-    
+/* ================= PROFILE REDIRECT ================= */
+function goToProfile() {
+  window.location.href = "/profileInfo.html";
+}
+
+/* ================= SHOW PROFILE DIALOG AFTER LOGIN ================= */
+window.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("justLoggedIn") === "true") {
+    setTimeout(() => {
+      const dialog = document.getElementById("profileDialog");
+      if (dialog && typeof dialog.showModal === "function") {
+        dialog.showModal();
+      }
+    }, 2000);
+
+    // Remove query param after showing dialog
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+});
+</script>
 
 
 </body>
