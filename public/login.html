@@ -171,79 +171,28 @@
 <script>
 const BASE_URL = "https://daily-cart-hqyw.onrender.com";
 
-const loginBox = document.getElementById("login");
-const signupBox = document.getElementById("signup");
-const btn = document.getElementById("btn");
-const dialogBox = document.getElementById("dialogBox");
-const dialogMessage = document.getElementById("dialogMessage");
-
-function showLogin() {
-  signupBox.style.display = "none";
-  loginBox.style.display = "block";
-  btn.style.left = "0";
-}
-
-function showSignUp() {
-  loginBox.style.display = "none";
-  signupBox.style.display = "block";
-  btn.style.left = "110px";
-}
-
-function openDialog(msg) {
-  dialogMessage.innerText = msg;
-  dialogBox.style.display = "flex";
-}
-
-function closeDialog() {
-  dialogBox.style.display = "none";
-}
-
-/* SIGNUP */
 function signUp() {
   fetch(`${BASE_URL}/signup`, {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      username: signupName.value,
-      email: signupEmail.value,
+      username: signupName.value.trim(),
+      email: signupEmail.value.trim(),
       password: signupPassword.value
     })
   })
-  .then(r => r.json())
-  .then(d => {
-    openDialog(d.message);
-    if (d.message.includes("success")) showLogin();
+  .then(async res => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    openDialog(data.message);
+    showLogin();
   })
-  .catch(() => openDialog("Signup failed"));
-}
-
-/* LOGIN */
-function logIn() {
-  fetch(`${BASE_URL}/login`, {
-    method: "POST",
-    credentials: "include",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      email: loginEmail.value,
-      password: loginPassword.value
-    })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (d.message === "Login successful") {
-      localStorage.setItem("user", JSON.stringify(d.user));
-      window.location.href = "/DailyCart.html?justLoggedIn=true";
-    } else {
-      openDialog(d.message);
-    }
-  })
-  .catch(() => openDialog("Login failed"));
-}
-
-function googleLogin() {
-  window.location.href = `${BASE_URL}/auth/google`;
+  .catch(err => {
+    openDialog(err.message);
+  });
 }
 </script>
+
 
 </body>
 </html>
