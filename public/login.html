@@ -202,19 +202,23 @@ function closeDialog() {
 function signUp() {
   fetch(`${BASE_URL}/signup`, {
     method: "POST",
-    headers: {"Content-Type":"application/json"},
+    credentials: "include",   // ✅ REQUIRED FIX
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      username: signupName.value,
-      email: signupEmail.value,
+      username: signupName.value.trim(),
+      email: signupEmail.value.trim(),
       password: signupPassword.value
     })
   })
-  .then(r => r.json())
-  .then(d => {
-    openDialog(d.message);
-    if (d.message.includes("success")) showLogin();
+  .then(async res => {
+    const data = await res.json();
+    if (!res.ok) throw data;
+    openDialog(data.message);
+    showLogin();
   })
-  .catch(() => openDialog("Signup failed"));
+  .catch(err => {
+    openDialog(err.message || "Signup failed");
+  });
 }
 
 /* LOGIN */

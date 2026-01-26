@@ -96,7 +96,7 @@ app.post("/signup", async (req, res) => {
 
   try {
     const [existing] = await connection.promise().query(
-      "SELECT id FROM user WHERE email = ?",
+      "SELECT id FROM users WHERE email = ?",
       [email]
     );
 
@@ -107,14 +107,14 @@ app.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     await connection.promise().query(
-      "INSERT INTO user (username, email, password) VALUES (?, ?, ?)",
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
       [username, email, hashedPassword]
     );
 
     res.status(201).json({ message: "Signup successful" });
 
   } catch (err) {
-    console.error("Signup error:", err);
+    console.error("❌ Signup error:", err.sqlMessage || err);
     res.status(500).json({ message: "Signup failed" });
   }
 });
@@ -128,16 +128,16 @@ app.post("/login", async (req, res) => {
   }
 
   try {
-    const [users] = await connection.promise().query(
-      "SELECT * FROM user WHERE email = ?",
+    const [rows] = await connection.promise().query(
+      "SELECT * FROM users WHERE email = ?",
       [email]
     );
 
-    if (users.length === 0) {
+    if (rows.length === 0) {
       return res.status(401).json({ message: "User not found" });
     }
 
-    const user = users[0];
+    const user = rows[0];
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -146,11 +146,10 @@ app.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, username: user.username },
-      JWT_SECRET,
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
 
-    // ✅ COOKIE FIXED
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: true,
@@ -161,13 +160,14 @@ app.post("/login", async (req, res) => {
     res.json({
       message: "Login successful",
       user: {
+        id: user.id,
         username: user.username,
         email: user.email
       }
     });
 
   } catch (err) {
-    console.error("Login error:", err);
+    console.error("❌ Login error:", err.sqlMessage || err);
     res.status(500).json({ message: "Login failed" });
   }
 });
