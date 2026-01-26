@@ -81,25 +81,20 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 /* ===================== ROUTES ===================== */
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "login.html"));
-});
-
-/* ---------- SIGNUP WITH 2FA ---------- */
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    return res.status(400).json({ message: "Please provide all fields" });
+    return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
-    const [existingUser] = await connection.promise().query(
+    const [existing] = await connection.promise().query(
       "SELECT id FROM user WHERE email = ?",
       [email]
     );
 
-    if (existingUser.length > 0) {
+    if (existing.length > 0) {
       return res.status(409).json({ message: "Email already exists" });
     }
 
@@ -110,25 +105,14 @@ app.post("/signup", async (req, res) => {
       [username, email, hashedPassword]
     );
 
-    const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
-
-    await connection.promise().query(
-      "UPDATE user SET twofa_secret = ? WHERE email = ?",
-      [secret.base32, email]
-    );
-
-    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
-
-    res.status(201).json({
-      message: "User registered successfully!",
-      qrCode,
-    });
+    res.status(201).json({ message: "Signup successful" });
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Signup failed" });
   }
 });
+
 
 /* ---------- LOGIN ---------- */
 app.post("/login", async (req, res) => {
