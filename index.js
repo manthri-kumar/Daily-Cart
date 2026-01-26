@@ -5,8 +5,6 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const speakeasy = require("speakeasy");
-const QRCode = require("qrcode");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
@@ -17,13 +15,18 @@ const app = express();
 const PORT = process.env.PORT || 5001;
 
 /* ===================== MIDDLEWARE ===================== */
+
+// ✅ FIXED CORS (VERY IMPORTANT)
 app.use(cors({
-  origin: true,
+  origin: "https://daily-cart-hqyw.onrender.com",
   credentials: true,
 }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// ✅ Serve frontend files
 app.use(express.static(path.join(__dirname, "public")));
 
 /* ===================== SESSION ===================== */
@@ -32,7 +35,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === "production",
+    secure: true,          // REQUIRED on Render (HTTPS)
     sameSite: "lax",
   }
 }));
@@ -52,20 +55,17 @@ passport.use(new GoogleStrategy({
   return done(null, profile);
 }));
 
-/* ===================== MYSQL (AIVEN SAFE) ===================== */
+/* ===================== MYSQL ===================== */
 const connection = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    rejectUnauthorized: false
-  },
+  ssl: { rejectUnauthorized: false },
   waitForConnections: true,
   connectionLimit: 10,
 });
-
 
 connection.getConnection((err, conn) => {
   if (err) {
@@ -81,6 +81,12 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 /* ===================== ROUTES ===================== */
 
+/* ✅ ROOT FIX (NO MORE Cannot GET /) */
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
+/* ---------- SIGNUP ---------- */
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -108,11 +114,10 @@ app.post("/signup", async (req, res) => {
     res.status(201).json({ message: "Signup successful" });
 
   } catch (err) {
-    console.error(err);
+    console.error("Signup error:", err);
     res.status(500).json({ message: "Signup failed" });
   }
 });
-
 
 /* ---------- LOGIN ---------- */
 app.post("/login", async (req, res) => {
@@ -145,25 +150,29 @@ app.post("/login", async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    // ✅ COOKIE FIXED
     res.cookie("auth_token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "lax",
       maxAge: 3600000,
     });
 
     res.json({
       message: "Login successful",
-      user: { username: user.username, email: user.email },
+      user: {
+        username: user.username,
+        email: user.email
+      }
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Login error:", err);
     res.status(500).json({ message: "Login failed" });
   }
 });
 
-/* ---------- JWT AUTH MIDDLEWARE ---------- */
+/* ---------- JWT MIDDLEWARE ---------- */
 const authenticateJWT = (req, res, next) => {
   const token = req.cookies.auth_token;
 
@@ -172,9 +181,7 @@ const authenticateJWT = (req, res, next) => {
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid token" });
-    }
+    if (err) return res.status(403).json({ message: "Invalid token" });
     req.user = user;
     next();
   });
@@ -193,7 +200,7 @@ app.post("/api/placeorder", authenticateJWT, async (req, res) => {
 
   try {
     await connection.promise().query(
-      `INSERT INTO orders 
+      `INSERT INTO orders
       (order_id, user_id, order_date, delivery_date, total_payment, items)
       VALUES (?, ?, ?, ?, ?, ?)`,
       [
@@ -209,7 +216,7 @@ app.post("/api/placeorder", authenticateJWT, async (req, res) => {
     res.json({ message: "Order placed successfully!", orderId });
 
   } catch (err) {
-    console.error(err);
+    console.error("Order error:", err);
     res.status(500).json({ message: "Failed to place order" });
   }
 });
@@ -230,23 +237,18 @@ app.get("/auth/google/callback",
 );
 
 /* ---------- PAGES ---------- */
-app.get("/DailyCart.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "DailyCart.html"));
-});
-
-
 app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
+});
+
+app.get("/DailyCart.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "DailyCart.html"));
 });
 
 app.get("/logout", (req, res) => {
   req.logout(() => {
     res.redirect("/login");
   });
-});
-
-app.get("/order.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "order.html"));
 });
 
 /* ===================== START SERVER ===================== */
