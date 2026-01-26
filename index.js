@@ -76,6 +76,16 @@ connection.getConnection((err, conn) => {
   conn.release();
 });
 
+connection.promise()
+  .query("SELECT DATABASE() AS db")
+  .then(([rows]) => console.log("CONNECTED DATABASE:", rows))
+  .catch(console.error);
+
+connection.promise()
+  .query("SHOW TABLES")
+  .then(([rows]) => console.log("TABLES SEEN BY BACKEND:", rows))
+  .catch(console.error);
+
 /* ===================== JWT ===================== */
 const JWT_SECRET = process.env.JWT_SECRET;
 
