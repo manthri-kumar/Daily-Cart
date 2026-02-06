@@ -1,130 +1,125 @@
 const express = require("express");
-const mysql = require("mysql2");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const speakeasy = require("speakeasy");
+const QRCode = require("qrcode");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const cookieParser = require("cookie-parser");
+const { Pool } = require("pg");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-/* ===================== MIDDLEWARE ===================== */
+/* ================= MIDDLEWARE ================= */
 
-// ✅ FIXED CORS (VERY IMPORTANT)
-app.use(cors({
-  origin: "https://daily-cart-hqyw.onrender.com",
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-// ✅ Serve frontend files
 app.use(express.static(path.join(__dirname, "public")));
 
-/* ===================== SESSION ===================== */
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: true,          // REQUIRED on Render (HTTPS)
-    sameSite: "lax",
-  }
-}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: true,
+      sameSite: "none",
+    },
+  })
+);
 
-/* ===================== PASSPORT ===================== */
 app.use(passport.initialize());
 app.use(passport.session());
+
+/* ================= DATABASE (POSTGRES) ================= */
+
+const pool = new Pool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
+  ssl: { rejectUnauthorized: false },
+});
+
+pool
+  .connect()
+  .then(() => console.log("✅ PostgreSQL connected"))
+  .catch((err) => {
+    console.error("❌ PostgreSQL connection failed", err);
+    process.exit(1);
+  });
+
+/* ================= AUTH CONFIG ================= */
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: `${process.env.BASE_URL}/auth/google/callback`
-}, (accessToken, refreshToken, profile, done) => {
-  return done(null, profile);
-}));
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
+    },
+    (accessToken, refreshToken, profile, done) => done(null, profile)
+  )
+);
 
-/* ===================== MYSQL ===================== */
-const connection = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: { rejectUnauthorized: false },
-  waitForConnections: true,
-  connectionLimit: 10,
-});
+/* ================= ROUTES ================= */
 
-connection.getConnection((err, conn) => {
-  if (err) {
-    console.error("❌ MySQL connection failed:", err);
-    process.exit(1);
-  }
-  console.log("✅ Connected to MySQL database");
-  conn.release();
-});
-
-connection.promise()
-  .query("SELECT DATABASE() AS db")
-  .then(([rows]) => console.log("CONNECTED DATABASE:", rows))
-  .catch(console.error);
-
-connection.promise()
-  .query("SHOW TABLES")
-  .then(([rows]) => console.log("TABLES SEEN BY BACKEND:", rows))
-  .catch(console.error);
-
-/* ===================== JWT ===================== */
-const JWT_SECRET = process.env.JWT_SECRET;
-
-/* ===================== ROUTES ===================== */
-
-/* ✅ ROOT FIX (NO MORE Cannot GET /) */
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "login.html"));
+  res.send("DailyCart Backend is running 🚀");
 });
 
 /* ---------- SIGNUP ---------- */
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
-  if (!username || !email || !password) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
   try {
-    const [existing] = await connection.promise().query(
-      "SELECT id FROM users WHERE email = ?",
+    const { rows } = await pool.query(
+      "SELECT id FROM users WHERE email = $1",
       [email]
     );
 
-    if (existing.length > 0) {
+    if (rows.length > 0)
       return res.status(409).json({ message: "Email already exists" });
-    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await connection.promise().query(
-      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+    await pool.query(
+      "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
       [username, email, hashedPassword]
     );
 
-    res.status(201).json({ message: "Signup successful" });
+    const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
 
+    await pool.query(
+      "UPDATE users SET twofa_secret = $1 WHERE email = $2",
+      [secret.base32, email]
+    );
+
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
+
+    res.status(201).json({ message: "Signup successful", qrCode });
   } catch (err) {
-    console.error("❌ Signup error:", err.sqlMessage || err);
+    console.error(err);
     res.status(500).json({ message: "Signup failed" });
   }
 });
@@ -133,51 +128,40 @@ app.post("/signup", async (req, res) => {
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password required" });
-  }
-
   try {
-    const [rows] = await connection.promise().query(
-      "SELECT * FROM users WHERE email = ?",
+    const { rows } = await pool.query(
+      "SELECT * FROM users WHERE email = $1",
       [email]
     );
 
-    if (rows.length === 0) {
+    if (rows.length === 0)
       return res.status(401).json({ message: "User not found" });
-    }
 
     const user = rows[0];
-    const isMatch = await bcrypt.compare(password, user.password);
+    const match = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) {
+    if (!match)
       return res.status(401).json({ message: "Invalid password" });
-    }
 
     const token = jwt.sign(
-      { id: user.id, username: user.username },
-      process.env.JWT_SECRET,
+      { id: user.id, email: user.email },
+      JWT_SECRET,
       { expiresIn: "1h" }
     );
 
     res.cookie("auth_token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 3600000,
     });
 
     res.json({
       message: "Login successful",
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email
-      }
+      user: { email: user.email, username: user.username },
     });
-
   } catch (err) {
-    console.error("❌ Login error:", err.sqlMessage || err);
+    console.error(err);
     res.status(500).json({ message: "Login failed" });
   }
 });
@@ -185,10 +169,7 @@ app.post("/login", async (req, res) => {
 /* ---------- JWT MIDDLEWARE ---------- */
 const authenticateJWT = (req, res, next) => {
   const token = req.cookies.auth_token;
-
-  if (!token) {
-    return res.status(403).json({ message: "Access denied" });
-  }
+  if (!token) return res.status(403).json({ message: "Unauthorized" });
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ message: "Invalid token" });
@@ -200,68 +181,37 @@ const authenticateJWT = (req, res, next) => {
 /* ---------- PLACE ORDER ---------- */
 app.post("/api/placeorder", authenticateJWT, async (req, res) => {
   const { cart, totalAmount } = req.body;
-
-  if (!Array.isArray(cart) || cart.length === 0 || !totalAmount) {
-    return res.status(400).json({ message: "Invalid order data" });
-  }
-
   const orderId = `ORD-${Date.now()}`;
-  const orderDate = new Date().toISOString().split("T")[0];
 
   try {
-    await connection.promise().query(
-      `INSERT INTO orders
-      (order_id, user_id, order_date, delivery_date, total_payment, items)
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        orderId,
-        req.user.id,
-        orderDate,
-        orderDate,
-        totalAmount,
-        JSON.stringify(cart),
-      ]
+    await pool.query(
+      `INSERT INTO orders (order_id, user_id, total_payment, items)
+       VALUES ($1, $2, $3, $4)`,
+      [orderId, req.user.id, totalAmount, JSON.stringify(cart)]
     );
 
-    res.json({ message: "Order placed successfully!", orderId });
-
+    res.json({ message: "Order placed", orderId });
   } catch (err) {
-    console.error("Order error:", err);
-    res.status(500).json({ message: "Failed to place order" });
+    console.error(err);
+    res.status(500).json({ message: "Order failed" });
   }
 });
 
-/* ---------- GOOGLE OAUTH ---------- */
-app.get("/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    prompt: "select_account",
-  })
+/* ---------- GOOGLE AUTH ---------- */
+app.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-app.get("/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+app.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect("/DailyCart.html?justLoggedIn=true");
+    res.redirect(`${process.env.FRONTEND_URL}/DailyCart.html`);
   }
 );
 
-/* ---------- PAGES ---------- */
-app.get("/login", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "login.html"));
-});
-
-app.get("/DailyCart.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "DailyCart.html"));
-});
-
-app.get("/logout", (req, res) => {
-  req.logout(() => {
-    res.redirect("/login");
-  });
-});
-
-/* ===================== START SERVER ===================== */
+/* ================= START ================= */
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
