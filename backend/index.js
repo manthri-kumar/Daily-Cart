@@ -12,8 +12,14 @@ const cookieParser = require("cookie-parser");
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
-/* ================= APP INIT ================= */
 const app = express();
+const PORT = process.env.PORT || 8080;
+
+/* ================= SAFETY CHECK ================= */
+if (!process.env.JWT_SECRET) {
+  console.error("❌ JWT_SECRET missing");
+  process.exit(1);
+}
 
 /* ================= BASIC SETUP ================= */
 app.set("trust proxy", 1);
@@ -37,8 +43,8 @@ app.use(
     saveUninitialized: false,
     proxy: true,
     cookie: {
-      secure: true,
-      sameSite: "none",
+      secure: true,          // Railway = HTTPS
+      sameSite: "none",      // required for cross-site cookies
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
@@ -69,7 +75,7 @@ const db = mysql.createPool({
   }
 })();
 
-/* ================= AUTH CONFIG ================= */
+/* ================= PASSPORT ================= */
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
@@ -105,8 +111,9 @@ app.post("/signup", async (req, res) => {
       [email]
     );
 
-    if (rows.length > 0)
+    if (rows.length > 0) {
       return res.status(409).json({ message: "Email already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
@@ -134,14 +141,16 @@ app.post("/login", async (req, res) => {
       [email]
     );
 
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(401).json({ message: "User not found" });
+    }
 
     const user = rows[0];
     const match = await bcrypt.compare(password, user.password);
 
-    if (!match)
+    if (!match) {
       return res.status(401).json({ message: "Invalid password" });
+    }
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
@@ -211,8 +220,6 @@ app.get(
 );
 
 /* ================= START SERVER (ONLY ONCE) ================= */
-const PORT = process.env.PORT || 8080;
-
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
