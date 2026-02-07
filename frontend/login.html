@@ -15,7 +15,7 @@ body{
   justify-content:center;
   align-items:center;
   height:100vh;
-  background:#f4f6f8;
+  background:#f4f4f4;
 }
 .form-card{
   width:350px;
@@ -23,9 +23,10 @@ body{
   border-radius:25px;
   box-shadow:0 0 20px #ccc;
   background:#fff;
+  text-align:center;
 }
 input{
-  width:100%;
+  width:90%;
   padding:12px;
   margin:10px 0;
   border-radius:20px;
@@ -41,7 +42,6 @@ button{
   cursor:pointer;
   margin-top:10px;
 }
-button:hover{ opacity:0.9; }
 .google-btn{
   background:#fff;
   color:#000;
@@ -49,14 +49,7 @@ button:hover{ opacity:0.9; }
 }
 #msg{
   margin-top:10px;
-  text-align:center;
-  color:#e63946;
-}
-.toggle{
-  text-align:center;
-  margin-top:10px;
-  cursor:pointer;
-  color:#ff8c00;
+  color:red;
 }
 </style>
 </head>
@@ -65,19 +58,19 @@ button:hover{ opacity:0.9; }
 
 <div class="form-card">
 
-<h3 id="title">Login</h3>
+<h3>Login / Signup</h3>
 
-<input id="username" placeholder="Username (signup only)" style="display:none">
+<input id="username" placeholder="Username (signup only)">
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 
-<button id="mainBtn" onclick="login()">Login</button>
+<button type="button" onclick="login()">Login</button>
+<button type="button" onclick="signup()">Signup</button>
 
-<button class="google-btn" onclick="googleLogin()">
+<button type="button" class="google-btn" onclick="googleLogin()">
 <i class="fa-brands fa-google"></i> Sign in with Google
 </button>
 
-<p class="toggle" onclick="toggleMode()">Don't have an account? Sign up</p>
 <p id="msg"></p>
 
 </div>
@@ -85,73 +78,54 @@ button:hover{ opacity:0.9; }
 <script>
 const BASE_URL = "https://daily-cart-production.up.railway.app";
 
-let isSignup = false;
-
-function showMsg(m){ document.getElementById("msg").innerText = m; }
-
-function toggleMode(){
-  isSignup = !isSignup;
-  document.getElementById("title").innerText = isSignup ? "Sign Up" : "Login";
-  document.getElementById("mainBtn").innerText = isSignup ? "Sign Up" : "Login";
-  document.querySelector(".toggle").innerText =
-    isSignup ? "Already have an account? Login" : "Don't have an account? Sign up";
-  document.getElementById("username").style.display = isSignup ? "block" : "none";
-  showMsg("");
+function showMsg(m){
+  document.getElementById("msg").innerText = m;
 }
 
+/* SIGNUP */
 async function signup(){
-  if(!username.value || !email.value || !password.value){
-    showMsg("All fields required");
-    return;
-  }
+  try{
+    const res = await fetch(`${BASE_URL}/signup`,{
+      method:"POST",
+      credentials:"include",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        username: username.value.trim(),
+        email: email.value.trim(),
+        password: password.value
+      })
+    });
 
-  const res = await fetch(`${BASE_URL}/signup`,{
-    method:"POST",
-    credentials:"include",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      username:username.value.trim(),
-      email:email.value.trim(),
-      password:password.value
-    })
-  });
-
-  const d = await res.json();
-  if(res.ok){
-    showMsg("Signup successful. Please login.");
-    toggleMode();
-  } else {
-    showMsg(d.message || "Signup failed");
+    const data = await res.json();
+    if(!res.ok) throw data;
+    showMsg("Signup successful. You can login now.");
+  }catch(err){
+    showMsg(err.message || "Signup failed");
   }
 }
 
+/* LOGIN */
 async function login(){
-  if(isSignup){
-    signup();
-    return;
-  }
+  try{
+    const res = await fetch(`${BASE_URL}/login`,{
+      method:"POST",
+      credentials:"include",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        email: email.value.trim(),
+        password: password.value
+      })
+    });
 
-  if(!email.value || !password.value){
-    showMsg("Email & password required");
-    return;
-  }
-
-  const res = await fetch(`${BASE_URL}/login`,{
-    method:"POST",
-    credentials:"include",
-    headers:{ "Content-Type":"application/json" },
-    body:JSON.stringify({
-      email:email.value.trim(),
-      password:password.value
-    })
-  });
-
-  const d = await res.json();
-  if(d.message === "Login successful"){
-    localStorage.setItem("user",JSON.stringify(d.user));
-    window.location.href = "DailyCart.html";
-  } else {
-    showMsg(d.message || "Login failed");
+    const data = await res.json();
+    if(data.message === "Login successful"){
+      localStorage.setItem("user", JSON.stringify(data.user));
+      window.location.href = "DailyCart.html";
+    }else{
+      showMsg(data.message);
+    }
+  }catch{
+    showMsg("Login failed");
   }
 }
 
