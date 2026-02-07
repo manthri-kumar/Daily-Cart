@@ -1,250 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sign Up / Login</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | DailyCart</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
 
-  <style>
-    body {
-      background-color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      font-family: 'Poppins', sans-serif;
-    }
-    .form-card {
-      border-radius: 40px;
-      width: 350px;
-      box-shadow: 0 5px 15px rgba(0,0,0,.2);
-      background: #f9f9f9;
-      padding: 25px;
-      text-align: center;
-    }
-    .btn-box {
-      width: 220px;
-      margin: 20px auto;
-      position: relative;
-      border-radius: 30px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .toggle-btn {
-      padding: 10px 30px;
-      cursor: pointer;
-      background: transparent;
-      border: 0;
-      font-weight: bold;
-      z-index: 1;
-    }
-    .btn {
-      position: absolute;
-      top: 0;
-      left: 110px;
-      width: 110px;
-      height: 100%;
-      background: linear-gradient(to right, #ff8c00, #e26b6b);
-      border-radius: 30px;
-      transition: .4s;
-    }
-    .input-container {
-      position: relative;
-      margin: 12px 0;
-    }
-    input {
-      width: 90%;
-      padding: 10px 10px 10px 40px;
-      border-radius: 30px;
-      border: 1px solid #ccc;
-    }
-    .icon {
-      position: absolute;
-      left: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #888;
-    }
-    .signin {
-      width: 100%;
-      margin-top: 15px;
-      padding: 10px;
-      border: none;
-      border-radius: 30px;
-      background: #ff8c00;
-      color: #fff;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .google-btn {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      border-radius: 30px;
-      border: none;
-      background: #fff;
-      font-weight: bold;
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .google-btn i {
-      margin-right: 8px;
-    }
-    .dialog-box {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.4);
-      justify-content: center;
-      align-items: center;
-    }
-    .dialog-content {
-      background: #fff;
-      padding: 20px;
-      border-radius: 15px;
-      width: 300px;
-      text-align: center;
-    }
-  </style>
+<style>
+body{
+  font-family:Poppins;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.form-card{
+  width:350px;
+  padding:20px;
+  border-radius:25px;
+  box-shadow:0 0 20px #ccc;
+}
+input{
+  width:90%;
+  padding:10px;
+  margin:10px;
+  border-radius:20px;
+}
+button{
+  padding:10px;
+  width:100%;
+  border-radius:20px;
+  background:#ff8c00;
+  color:#fff;
+  border:none;
+  cursor:pointer;
+}
+.google-btn{
+  background:#fff;
+  color:#000;
+  border:1px solid #ccc;
+}
+</style>
 </head>
 
 <body>
 
 <div class="form-card">
 
-  <div class="btn-box">
-    <div class="btn" id="btn"></div>
-    <button class="toggle-btn" onclick="showLogin()">Log In</button>
-    <button class="toggle-btn" onclick="showSignUp()">Sign Up</button>
-  </div>
+<h3 id="title">Login</h3>
 
-  <!-- SIGNUP -->
-  <div id="signup">
-    <div class="input-container">
-      <i class="fa fa-user icon"></i>
-      <input id="signupName" placeholder="Username">
-    </div>
-    <div class="input-container">
-      <i class="fa fa-envelope icon"></i>
-      <input id="signupEmail" type="email" placeholder="Email">
-    </div>
-    <div class="input-container">
-      <i class="fa fa-lock icon"></i>
-      <input id="signupPassword" type="password" placeholder="Password">
-    </div>
-    <button class="signin" onclick="signUp()">Sign Up</button>
-  </div>
+<input id="username" placeholder="Username (signup only)">
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-  <!-- LOGIN -->
-  <div id="login" style="display:none">
-    <div class="input-container">
-      <i class="fa fa-envelope icon"></i>
-      <input id="loginEmail" type="email" placeholder="Email">
-    </div>
-    <div class="input-container">
-      <i class="fa fa-lock icon"></i>
-      <input id="loginPassword" type="password" placeholder="Password">
-    </div>
-    <button class="signin" onclick="logIn()">Log In</button>
-  </div>
+<button onclick="login()">Login</button>
+<button onclick="signup()">Signup</button>
 
-  <button class="google-btn" onclick="googleLogin()">
-    <i class="fa-brands fa-google"></i> Sign in with Google
-  </button>
+<button class="google-btn" onclick="googleLogin()">
+<i class="fa-brands fa-google"></i> Sign in with Google
+</button>
 
-</div>
+<p id="msg"></p>
 
-<!-- Dialog -->
-<div class="dialog-box" id="dialogBox">
-  <div class="dialog-content">
-    <p id="dialogMessage"></p>
-    <button class="signin" onclick="closeDialog()">OK</button>
-  </div>
 </div>
 
 <script>
-const BASE_URL = "https://daily-cart-hqyw.onrender.com";
+const BASE_URL = "https://daily-cart-production.up.railway.app";
 
-const loginBox = document.getElementById("login");
-const signupBox = document.getElementById("signup");
-const btn = document.getElementById("btn");
-const dialogBox = document.getElementById("dialogBox");
-const dialogMessage = document.getElementById("dialogMessage");
+function showMsg(m){ document.getElementById("msg").innerText = m; }
 
-function showLogin() {
-  signupBox.style.display = "none";
-  loginBox.style.display = "block";
-  btn.style.left = "0";
-}
-
-function showSignUp() {
-  loginBox.style.display = "none";
-  signupBox.style.display = "block";
-  btn.style.left = "110px";
-}
-
-function openDialog(msg) {
-  dialogMessage.innerText = msg;
-  dialogBox.style.display = "flex";
-}
-
-function closeDialog() {
-  dialogBox.style.display = "none";
-}
-
-/* SIGNUP */
-function signUp() {
-  fetch(`${BASE_URL}/signup`, {
-    method: "POST",
-    credentials: "include",   // ✅ REQUIRED FIX
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: signupName.value.trim(),
-      email: signupEmail.value.trim(),
-      password: signupPassword.value
+async function signup(){
+  const res = await fetch(`${BASE_URL}/signup`,{
+    method:"POST",
+    credentials:"include",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      username:username.value,
+      email:email.value,
+      password:password.value
     })
-  })
-  .then(async res => {
-    const data = await res.json();
-    if (!res.ok) throw data;
-    openDialog(data.message);
-    showLogin();
-  })
-  .catch(err => {
-    openDialog(err.message || "Signup failed");
   });
+  const d = await res.json();
+  showMsg(d.message || "Signup failed");
 }
 
-/* LOGIN */
-function logIn() {
-  fetch(`${BASE_URL}/login`, {
-    method: "POST",
-    credentials: "include",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      email: loginEmail.value,
-      password: loginPassword.value
+async function login(){
+  const res = await fetch(`${BASE_URL}/login`,{
+    method:"POST",
+    credentials:"include",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      email:email.value,
+      password:password.value
     })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if (d.message === "Login successful") {
-      localStorage.setItem("user", JSON.stringify(d.user));
-      window.location.href = "/DailyCart.html?justLoggedIn=true";
-    } else {
-      openDialog(d.message);
-    }
-  })
-  .catch(() => openDialog("Login failed"));
+  });
+  const d = await res.json();
+  if(d.message==="Login successful"){
+    localStorage.setItem("user",JSON.stringify(d.user));
+    window.location.href="DailyCart.html";
+  } else showMsg(d.message);
 }
 
-function googleLogin() {
+function googleLogin(){
   window.location.href = `${BASE_URL}/auth/google`;
 }
 </script>
