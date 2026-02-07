@@ -12,13 +12,8 @@ const cookieParser = require("cookie-parser");
 const mysql = require("mysql2/promise");
 require("dotenv").config();
 
+/* ================= APP INIT ================= */
 const app = express();
-/* ================= START ================= */
-const PORT = process.env.PORT || 8080;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
 
 /* ================= BASIC SETUP ================= */
 app.set("trust proxy", 1);
@@ -85,7 +80,9 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
     },
-    (accessToken, refreshToken, profile, done) => done(null, profile)
+    (accessToken, refreshToken, profile, done) => {
+      return done(null, profile);
+    }
   )
 );
 
@@ -200,18 +197,22 @@ app.post("/api/placeorder", authenticateJWT, async (req, res) => {
 });
 
 /* ---------- GOOGLE AUTH ---------- */
-app.get("/auth/google",
+app.get(
+  "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-app.get("/auth/google/callback",
+app.get(
+  "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/DailyCart.html`);
   }
 );
 
-/* ================= START ================= */
-app.listen(PORT, () => {
+/* ================= START SERVER (ONLY ONCE) ================= */
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
