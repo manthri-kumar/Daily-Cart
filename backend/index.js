@@ -13,13 +13,12 @@ const mysql = require("mysql2/promise");
 require("dotenv").config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+/* ================= START ================= */
+const PORT = process.env.PORT || 8080;
 
-/* ================= SAFETY CHECK ================= */
-if (!process.env.JWT_SECRET) {
-  console.error("❌ JWT_SECRET missing");
-  process.exit(1);
-}
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
 
 /* ================= BASIC SETUP ================= */
 app.set("trust proxy", 1);
