@@ -15,32 +15,48 @@ body{
   justify-content:center;
   align-items:center;
   height:100vh;
+  background:#f4f6f8;
 }
 .form-card{
   width:350px;
-  padding:20px;
+  padding:25px;
   border-radius:25px;
   box-shadow:0 0 20px #ccc;
+  background:#fff;
 }
 input{
-  width:90%;
-  padding:10px;
-  margin:10px;
+  width:100%;
+  padding:12px;
+  margin:10px 0;
   border-radius:20px;
+  border:1px solid #ccc;
 }
 button{
-  padding:10px;
+  padding:12px;
   width:100%;
   border-radius:20px;
   background:#ff8c00;
   color:#fff;
   border:none;
   cursor:pointer;
+  margin-top:10px;
 }
+button:hover{ opacity:0.9; }
 .google-btn{
   background:#fff;
   color:#000;
   border:1px solid #ccc;
+}
+#msg{
+  margin-top:10px;
+  text-align:center;
+  color:#e63946;
+}
+.toggle{
+  text-align:center;
+  margin-top:10px;
+  cursor:pointer;
+  color:#ff8c00;
 }
 </style>
 </head>
@@ -51,17 +67,17 @@ button{
 
 <h3 id="title">Login</h3>
 
-<input id="username" placeholder="Username (signup only)">
+<input id="username" placeholder="Username (signup only)" style="display:none">
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
-<button onclick="signup()">Signup</button>
+<button id="mainBtn" onclick="login()">Login</button>
 
 <button class="google-btn" onclick="googleLogin()">
 <i class="fa-brands fa-google"></i> Sign in with Google
 </button>
 
+<p class="toggle" onclick="toggleMode()">Don't have an account? Sign up</p>
 <p id="msg"></p>
 
 </div>
@@ -69,38 +85,74 @@ button{
 <script>
 const BASE_URL = "https://daily-cart-production.up.railway.app";
 
+let isSignup = false;
+
 function showMsg(m){ document.getElementById("msg").innerText = m; }
 
+function toggleMode(){
+  isSignup = !isSignup;
+  document.getElementById("title").innerText = isSignup ? "Sign Up" : "Login";
+  document.getElementById("mainBtn").innerText = isSignup ? "Sign Up" : "Login";
+  document.querySelector(".toggle").innerText =
+    isSignup ? "Already have an account? Login" : "Don't have an account? Sign up";
+  document.getElementById("username").style.display = isSignup ? "block" : "none";
+  showMsg("");
+}
+
 async function signup(){
+  if(!username.value || !email.value || !password.value){
+    showMsg("All fields required");
+    return;
+  }
+
   const res = await fetch(`${BASE_URL}/signup`,{
     method:"POST",
     credentials:"include",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
-      username:username.value,
-      email:email.value,
+      username:username.value.trim(),
+      email:email.value.trim(),
       password:password.value
     })
   });
+
   const d = await res.json();
-  showMsg(d.message || "Signup failed");
+  if(res.ok){
+    showMsg("Signup successful. Please login.");
+    toggleMode();
+  } else {
+    showMsg(d.message || "Signup failed");
+  }
 }
 
 async function login(){
+  if(isSignup){
+    signup();
+    return;
+  }
+
+  if(!email.value || !password.value){
+    showMsg("Email & password required");
+    return;
+  }
+
   const res = await fetch(`${BASE_URL}/login`,{
     method:"POST",
     credentials:"include",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
-      email:email.value,
+      email:email.value.trim(),
       password:password.value
     })
   });
+
   const d = await res.json();
-  if(d.message==="Login successful"){
+  if(d.message === "Login successful"){
     localStorage.setItem("user",JSON.stringify(d.user));
-    window.location.href="DailyCart.html";
-  } else showMsg(d.message);
+    window.location.href = "DailyCart.html";
+  } else {
+    showMsg(d.message || "Login failed");
+  }
 }
 
 function googleLogin(){
