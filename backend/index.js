@@ -24,17 +24,17 @@ if (!process.env.JWT_SECRET) {
 /* ================= BASIC SETUP ================= */
 app.set("trust proxy", 1);
 
+/* ✅ CORS — MUST BE BEFORE ROUTES */
 app.use(
   cors({
     origin: [
       "http://localhost:5500",
       "http://127.0.0.1:5500",
-      "https://daily-cart-iqh8.vercel.app"
+      "https://daily-cart-iqh8.vercel.app",
     ],
     credentials: true,
   })
 );
-
 
 app.use(bodyParser.json());
 app.use(cookieParser());
@@ -48,8 +48,8 @@ app.use(
     saveUninitialized: false,
     proxy: true,
     cookie: {
-      secure: true,          // Railway = HTTPS
-      sameSite: "none",      // required for cross-site cookies
+      secure: true,     // HTTPS (Railway)
+      sameSite: "none", // cross-site cookies
       maxAge: 24 * 60 * 60 * 1000,
     },
   })
@@ -58,7 +58,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* ================= MYSQL (RAILWAY) ================= */
+/* ================= MYSQL ================= */
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -84,6 +84,7 @@ const db = mysql.createPool({
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
+/* ✅ GOOGLE STRATEGY — FIXED */
 passport.use(
   new GoogleStrategy(
     {
@@ -91,8 +92,33 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
     },
-    (accessToken, refreshToken, profile, done) => {
-      return done(null, profile);
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        const email = profile.emails[0].value;
+        const username = profile.displayName;
+
+        const [rows] = await db.query(
+          "SELECT id FROM users WHERE email = ?",
+          [email]
+        );
+
+        let userId;
+
+        if (rows.length === 0) {
+          const [result] = await db.query(
+            "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
+            [username, email, "GOOGLE_AUTH"]
+          );
+          userId = result.insertId;
+        } else {
+          userId = rows[0].id;
+        }
+
+        return done(null, { id: userId, email, username });
+      } catch (err) {
+        console.error("❌ Google Auth Error:", err);
+        return done(err, null);
+      }
     }
   )
 );
@@ -146,16 +172,14 @@ app.post("/login", async (req, res) => {
       [email]
     );
 
-    if (rows.length === 0) {
+    if (rows.length === 0)
       return res.status(401).json({ message: "User not found" });
-    }
 
     const user = rows[0];
     const match = await bcrypt.compare(password, user.password);
 
-    if (!match) {
+    if (!match)
       return res.status(401).json({ message: "Invalid password" });
-    }
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
@@ -220,11 +244,11 @@ app.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
-    res.redirect(`${process.env.FRONTEND_URL}/DailyCart.html`);
+    res.redirect("https://daily-cart-iqh8.vercel.app/DailyCart.html");
   }
 );
 
-/* ================= START SERVER (ONLY ONCE) ================= */
+/* ================= START SERVER ================= */
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
