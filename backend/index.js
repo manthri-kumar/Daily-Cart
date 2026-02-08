@@ -59,6 +59,11 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+/* ================= HEALTH CHECK (IMPORTANT) ================= */
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 /* ================= MYSQL ================= */
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
