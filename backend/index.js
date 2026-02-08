@@ -59,7 +59,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* ================= HEALTH CHECK (IMPORTANT) ================= */
+/* ================= HEALTH CHECK ================= */
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
@@ -257,7 +257,10 @@ app.get(
       maxAge: 3600000,
     });
 
-    res.redirect("https://daily-cart-iqh8.vercel.app/DailyCart.html");
+    // ✅ FIXED FRONTEND PATH
+    res.redirect(
+      "https://daily-cart-iqh8.vercel.app/frontend/DailyCart.html"
+    );
   }
 );
 
