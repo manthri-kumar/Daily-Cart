@@ -259,7 +259,7 @@ app.get(
 
     // ✅ FIXED FRONTEND PATH
     res.redirect(
-      "https://daily-cart-iqh8.vercel.app/"
+      "https://daily-cart-iqh8.vercel.app/index.html"
     );
   }
 );
