@@ -17,8 +17,8 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 /* ================= SAFETY CHECK ================= */
-if (!process.env.JWT_SECRET) {
-  console.error("❌ JWT_SECRET missing");
+if (!process.env.JWT_SECRET || !process.env.SESSION_SECRET) {
+  console.error("❌ Missing secrets");
   process.exit(1);
 }
 
@@ -31,7 +31,6 @@ app.use(
     origin: [
       "https://daily-cart-iqh8.vercel.app",
       "http://localhost:5500",
-      "http://127.0.0.1:5500",
     ],
     credentials: true,
   })
@@ -97,7 +96,7 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (_, __, profile, done) => {
       try {
         const email = profile.emails[0].value;
         const username = profile.displayName;
@@ -119,17 +118,16 @@ passport.use(
           userId = rows[0].id;
         }
 
-        return done(null, { id: userId, email, username });
+        done(null, { id: userId, email });
       } catch (err) {
-        console.error("❌ Google Auth Error:", err);
-        return done(err, null);
+        done(err, null);
       }
     }
   )
 );
 
 /* ================= ROUTES ================= */
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.send("DailyCart Backend is running 🚀");
 });
 
@@ -137,102 +135,74 @@ app.get("/", (req, res) => {
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
-  try {
-    const [rows] = await db.query(
-      "SELECT id FROM users WHERE email = ?",
-      [email]
-    );
+  const [rows] = await db.query(
+    "SELECT id FROM users WHERE email = ?",
+    [email]
+  );
 
-    if (rows.length > 0)
-      return res.status(409).json({ message: "Email already exists" });
+  if (rows.length > 0)
+    return res.status(409).json({ message: "Email already exists" });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
-    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
+  const hashed = await bcrypt.hash(password, 10);
+  const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
+  const qrCode = await QRCode.toDataURL(secret.otpauth_url);
 
-    await db.query(
-      "INSERT INTO users (username, email, password, twofa_secret) VALUES (?, ?, ?, ?)",
-      [username, email, hashedPassword, secret.base32]
-    );
+  await db.query(
+    "INSERT INTO users (username, email, password, twofa_secret) VALUES (?, ?, ?, ?)",
+    [username, email, hashed, secret.base32]
+  );
 
-    res.status(201).json({ message: "Signup successful", qrCode });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Signup failed" });
-  }
+  res.status(201).json({ message: "Signup successful", qrCode });
 });
 
 /* ---------- LOGIN ---------- */
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  try {
-    const [rows] = await db.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
+  const [rows] = await db.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email]
+  );
 
-    if (rows.length === 0)
-      return res.status(401).json({ message: "User not found" });
+  if (!rows.length)
+    return res.status(401).json({ message: "User not found" });
 
-    const user = rows[0];
-    const match = await bcrypt.compare(password, user.password);
+  const user = rows[0];
+  const match = await bcrypt.compare(password, user.password);
 
-    if (!match)
-      return res.status(401).json({ message: "Invalid password" });
+  if (!match)
+    return res.status(401).json({ message: "Invalid password" });
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+  const token = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" }
+  );
 
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 3600000,
-    });
+  res.cookie("auth_token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 3600000,
+  });
 
-    res.json({
-      message: "Login successful",
-      user: { email: user.email, username: user.username },
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Login failed" });
-  }
+  res.json({
+    message: "Login successful",
+    user: { email: user.email, username: user.username },
+  });
 });
 
 /* ---------- JWT MIDDLEWARE ---------- */
 const authenticateJWT = (req, res, next) => {
   const token = req.cookies.auth_token;
-  if (!token) return res.status(403).json({ message: "Unauthorized" });
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
+    if (err) return res.status(401).json({ message: "Invalid token" });
     req.user = user;
     next();
   });
 };
-
-/* ---------- PLACE ORDER ---------- */
-app.post("/api/placeorder", authenticateJWT, async (req, res) => {
-  const { cart, totalAmount } = req.body;
-  const orderId = `ORD-${Date.now()}`;
-
-  try {
-    await db.query(
-      "INSERT INTO orders (order_id, user_id, total_payment, items) VALUES (?, ?, ?, ?)",
-      [orderId, req.user.id, totalAmount, JSON.stringify(cart)]
-    );
-
-    res.json({ message: "Order placed", orderId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Order failed" });
-  }
-});
 
 /* ---------- GOOGLE AUTH ---------- */
 app.get(
@@ -257,14 +227,13 @@ app.get(
       maxAge: 3600000,
     });
 
-    // ✅ FIXED FRONTEND PATH
+    // ✅ IMPORTANT FIX
     res.redirect(
-      "https://daily-cart-iqh8.vercel.app/index.html"
+      "https://daily-cart-iqh8.vercel.app/index.html?googleLogin=true"
     );
   }
 );
 
-/* ================= START SERVER ================= */
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, "0.0.0.0", () =>
+  console.log(`🚀 Server running on port ${PORT}`)
+);
