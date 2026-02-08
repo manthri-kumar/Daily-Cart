@@ -1,40 +1,42 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const speakeasy = require("speakeasy");
+const QRCode = require("qrcode");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const cookieParser = require("cookie-parser");
 const mysql = require("mysql2/promise");
-require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-/* ================= SAFETY ================= */
+/* ================= SAFETY CHECK ================= */
 if (!process.env.JWT_SECRET) {
-  console.error("JWT_SECRET missing");
+  console.error("❌ JWT_SECRET missing");
   process.exit(1);
 }
 
-/* ================= TRUST PROXY ================= */
+/* ================= BASIC SETUP ================= */
 app.set("trust proxy", 1);
 
-/* ================= CORS (VERY IMPORTANT) ================= */
+/* ================= CORS ================= */
 app.use(
   cors({
     origin: [
+      "https://daily-cart-iqh8.vercel.app",
       "http://localhost:5500",
       "http://127.0.0.1:5500",
-      "https://daily-cart-iqh8.vercel.app",
     ],
     credentials: true,
   })
 );
 
-/* ================= MIDDLEWARE ================= */
 app.use(bodyParser.json());
 app.use(cookieParser());
 
@@ -57,14 +59,27 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* ================= DATABASE ================= */
+/* ================= MYSQL ================= */
 const db = mysql.createPool({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
   port: process.env.MYSQLPORT,
+  waitForConnections: true,
+  connectionLimit: 10,
 });
+
+(async () => {
+  try {
+    const conn = await db.getConnection();
+    console.log("✅ MySQL connected");
+    conn.release();
+  } catch (err) {
+    console.error("❌ MySQL error:", err);
+    process.exit(1);
+  }
+})();
 
 /* ================= PASSPORT ================= */
 passport.serializeUser((user, done) => done(null, user));
@@ -75,26 +90,33 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
+      callbackURL: "/auth/google/callback",
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email = profile.emails[0].value;
+        const username = profile.displayName;
 
         const [rows] = await db.query(
-          "SELECT * FROM users WHERE email = ?",
+          "SELECT id FROM users WHERE email = ?",
           [email]
         );
 
+        let userId;
+
         if (rows.length === 0) {
-          await db.query(
+          const [result] = await db.query(
             "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-            [profile.displayName, email, "GOOGLE_AUTH"]
+            [username, email, "GOOGLE_AUTH"]
           );
+          userId = result.insertId;
+        } else {
+          userId = rows[0].id;
         }
 
-        return done(null, { email });
+        return done(null, { id: userId, email, username });
       } catch (err) {
+        console.error("❌ Google Auth Error:", err);
         return done(err, null);
       }
     }
@@ -106,6 +128,7 @@ app.get("/", (req, res) => {
   res.send("DailyCart Backend is running 🚀");
 });
 
+/* ---------- SIGNUP ---------- */
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -118,64 +141,122 @@ app.post("/signup", async (req, res) => {
     if (rows.length > 0)
       return res.status(409).json({ message: "Email already exists" });
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const secret = speakeasy.generateSecret({ name: `DailyCart (${email})` });
+    const qrCode = await QRCode.toDataURL(secret.otpauth_url);
 
     await db.query(
-      "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-      [username, email, hashed]
+      "INSERT INTO users (username, email, password, twofa_secret) VALUES (?, ?, ?, ?)",
+      [username, email, hashedPassword, secret.base32]
     );
 
-    res.status(201).json({ message: "Signup successful" });
-  } catch {
+    res.status(201).json({ message: "Signup successful", qrCode });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Signup failed" });
   }
 });
 
+/* ---------- LOGIN ---------- */
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  const [rows] = await db.query(
-    "SELECT * FROM users WHERE email = ?",
-    [email]
-  );
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
 
-  if (!rows.length)
-    return res.status(401).json({ message: "User not found" });
+    if (rows.length === 0)
+      return res.status(401).json({ message: "User not found" });
 
-  const user = rows[0];
-  const match = await bcrypt.compare(password, user.password);
+    const user = rows[0];
+    const match = await bcrypt.compare(password, user.password);
 
-  if (!match)
-    return res.status(401).json({ message: "Invalid password" });
+    if (!match)
+      return res.status(401).json({ message: "Invalid password" });
 
-  const token = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.JWT_SECRET,
-    { expiresIn: "1h" }
-  );
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
 
-  res.cookie("auth_token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
-  });
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3600000,
+    });
 
-  res.json({ message: "Login successful", user });
+    res.json({
+      message: "Login successful",
+      user: { email: user.email, username: user.username },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Login failed" });
+  }
 });
 
-/* ================= GOOGLE ================= */
-app.get("/auth/google",
+/* ---------- JWT MIDDLEWARE ---------- */
+const authenticateJWT = (req, res, next) => {
+  const token = req.cookies.auth_token;
+  if (!token) return res.status(403).json({ message: "Unauthorized" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ message: "Invalid token" });
+    req.user = user;
+    next();
+  });
+};
+
+/* ---------- PLACE ORDER ---------- */
+app.post("/api/placeorder", authenticateJWT, async (req, res) => {
+  const { cart, totalAmount } = req.body;
+  const orderId = `ORD-${Date.now()}`;
+
+  try {
+    await db.query(
+      "INSERT INTO orders (order_id, user_id, total_payment, items) VALUES (?, ?, ?, ?)",
+      [orderId, req.user.id, totalAmount, JSON.stringify(cart)]
+    );
+
+    res.json({ message: "Order placed", orderId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Order failed" });
+  }
+});
+
+/* ---------- GOOGLE AUTH ---------- */
+app.get(
+  "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-app.get("/auth/google/callback",
+app.get(
+  "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
+    const token = jwt.sign(
+      { id: req.user.id, email: req.user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.cookie("auth_token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 3600000,
+    });
+
     res.redirect("https://daily-cart-iqh8.vercel.app/DailyCart.html");
   }
 );
 
-/* ================= START ================= */
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+/* ================= START SERVER ================= */
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
