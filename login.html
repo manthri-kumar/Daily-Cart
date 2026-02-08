@@ -118,9 +118,11 @@ async function login(){
     });
 
     const data = await res.json();
+
     if(data.message === "Login successful"){
       localStorage.setItem("user", JSON.stringify(data.user));
-      window.location.href = "DailyCart.html";
+      // ✅ FIXED REDIRECT
+      window.location.href = "index.html";
     }else{
       showMsg(data.message);
     }
