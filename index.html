@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Cart</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./index.css">
+
+  <!-- Fonts & Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+
+  <!-- Favicon -->
+  <link rel="icon" href="./assist/icon/Daily-removebg-preview.png">
+
+  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+</head>
+
+<body style="font-family: Poppins; background:#fff;">
+
+<!-- ================= HEADER ================= -->
+<header class="head">
+  <h1>Daily <span style="color:white">Cart</span></h1>
+
+  <ul>
+    <li><a href="./index.html">Home</a></li>
+    <li><a href="./Vegitable.html">Vegetables</a></li>
+    <li><a href="./About.html">About Us</a></li>
+    <li><a href="./profile.html">Profile</a></li>
+
+    <div class="search-box">
+      <input type="text" placeholder="Search">
+    </div>
+
+    <button class="icon-button">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+
+    <button id="cart-icon" class="icon-button">
+      <i class="fa-solid fa-shopping-cart"></i>
+      <span class="quantity">0</span>
+    </button>
+  </ul>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main>
+
+<!-- Slider -->
+<div class="container">
+  <div class="wrapper">
+    <img src="./assist/container/Design (2).png">
+    <img src="./assist/container/vegetable-grocery-delivery-promotion-web-banner-facebook-cover-instagram-template_502896-109.jpg">
+    <img src="./assist/container/Design (4).png">
+    <img src="./assist/container/Screenshot 2024-07-31 165751.png">
+  </div>
+</div>
+
+<h2 class="welcome">
+  Stock up on your favorites without leaving home — fresh groceries delivered to your door
+</h2>
+
+<!-- Categories -->
+<div class="card-group">
+  <div class="box"><img src="./assist/cardgroup/drinks.png"><h4>Drinks</h4></div>
+  <div class="box"><img src="./assist/cardgroup/biscute.png"><h4>Biscuits</h4></div>
+  <div class="box"><img src="./assist/cardgroup/bread.png"><h4>Bread</h4></div>
+  <div class="box"><img src="./assist/cardgroup/pickle.png"><h4>Pickles</h4></div>
+  <div class="box"><img src="./assist/cardgroup/fruits.png"><h4>Fruits</h4></div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div>
+    <p>DailyCart</p>
+    <ul>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Terms</a></li>
+      <li><a href="#">Privacy</a></li>
+    </ul>
+  </div>
+
+  <div>
+    <img src="./assist/footer/WhatsApp Image 2024-07-26 at 18.29.57_932b7f73.jpg">
+    <h4>A MANTHRI Enterprise</h4>
+  </div>
+</footer>
+
+</main>
+
+<!-- ================= SIDEBAR ================= -->
+<div id="sidebar" class="sidebar">
+  <div class="cart-items"></div>
+  <div class="sidebar-footer">
+    <div>Total: ₹<span class="cart-total">0</span></div>
+    <button>Checkout</button>
+  </div>
+</div>
+
+<!-- ================= JS ================= -->
+<script src="./DailyCart.js"></script>
+
+<script>
+/* ================= BACKEND ================= */
+const BASE_URL = "https://daily-cart-production.up.railway.app";
+
+/* ================= AUTH CHECK ================= */
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user || !user.email) {
+  window.location.href = "./login.html";
+}
+
+/* ================= CART COUNT ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const qty = document.querySelector(".quantity");
+  let count = 0;
+
+  document.querySelectorAll(".btn button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      count++;
+      qty.textContent = count;
+    });
+  });
+});
+
+/* ================= PROFILE ================= */
+function goToProfile() {
+  window.location.href = "./profileInfo.html";
+}
+</script>
+
+</body>
+</html>
